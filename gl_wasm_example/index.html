@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gltf Viewer</title>
+  </head>
+  <body>
+    <script type="module" src="./gltf_viewer.js"></script>
+    <input type="button" value="Shutdown" onclick="window.canvas_webgl.shutdown()"/>
+    <input type="button" value="Create" onclick="window.thing.create()"/>
+    <input type="button" value="Fill" onclick="window.canvas_webgl.fill()"/>
+    <input type="button" value="Animate" onclick="window.thing.set_animating(!window.thing.animating)"/>
+    <canvas id="canvas" width="400" height="400" style="border:solid"/>
+  </body>
+</html>
