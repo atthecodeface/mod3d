@@ -5,7 +5,7 @@ members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "shapes"]
 
 [package]
 edition = "2021"
-version = "0.1.0"
+version = "0.0.1"
 name = "mod3d"
 description = "3D Models for Gl processing\n"
 homepage = "https://github.com/atthecodeface/model3d"
