@@ -25,7 +25,7 @@ mod3d-shapes.workspace = true
 
 [workspace.package]
 edition = "2021"
-version = "0.1.0"
+version = "0.0.1"
 # name = "mod3d"
 description = "3D Models for Gl processing\n"
 homepage = "https://github.com/atthecodeface/model3d"
