@@ -1,0 +1,33 @@
+[package]
+name = "mod3d-gl-sdl-example"
+version = "0.1.0"
+edition.workspace = true
+description.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gl.workspace = true
+geo-nd.workspace = true
+indent-display.workspace = true
+mod3d-base.workspace = true
+
+base64.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+image.workspace = true
+clap.workspace = true
+sdl2.workspace = true
+
+[dependencies.mod3d-gltf]
+workspace = true
+features = ["serde", "serde_json"]
+
+[dependencies.mod3d-gl]
+workspace = true
+# default_features = false
+features = ["opengl"]
