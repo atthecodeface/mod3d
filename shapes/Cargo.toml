@@ -1,0 +1,27 @@
+[package]
+name = "mod3d-shapes"
+version = "0.1.0"
+edition.workspace = true
+description.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+base64.workspace = true
+geo-nd.workspace = true
+indent-display.workspace = true
+mod3d-base.workspace = true
+thiserror.workspace = true
+index_vec.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dependencies.mod3d-gltf]
+workspace = true
+features = ["serde"]
+
+
