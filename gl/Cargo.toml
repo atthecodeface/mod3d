@@ -1,0 +1,61 @@
+[package]
+name = "mod3d-gl"
+version = "0.1.0"
+edition.workspace = true
+description.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = ["webgl", "opengl", "serde"]
+webgl = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys"]
+opengl = ["dep:gl"]
+serde = ["dep:serde"]
+
+[dependencies]
+geo-nd.workspace = true
+indent-display.workspace = true
+mod3d-base.workspace = true
+
+[dependencies.serde]
+optional = true
+workspace = true
+features = ["derive"]
+
+[dependencies.gl]
+optional = true
+workspace = true
+
+[dependencies.wasm-bindgen]
+optional = true
+workspace = true
+
+[dependencies.js-sys]
+optional = true
+workspace = true
+
+[dependencies.web-sys]
+optional = true
+workspace = true
+features = [
+  'console',
+  'CanvasRenderingContext2d',
+  'Document',
+  'EventTarget',
+  'Element',
+  'HtmlCanvasElement',
+  'HtmlElement',
+  'MouseEvent',
+  'WebGlBuffer',
+  'WebGlVertexArrayObject',
+  'WebGl2RenderingContext',
+  'WebGlProgram',
+  'WebGlShader',
+  'WebGlTexture',
+  'WebGlUniformLocation',
+  'Window',
+]
