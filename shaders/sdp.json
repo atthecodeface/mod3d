@@ -1,0 +1,22 @@
+{
+    "vertex_src": "shaders/vertex.glsl",
+    "fragment_src": "shaders/fragment.glsl",
+    "attribute_map": {
+        "Position":"Position",
+        "Normal": "Normal",
+	"TexCoord": "TexCoords0"
+    }, 
+    "uniform_map": {
+    "uModelMatrix" : "ModelMatrix",
+    "uMeshMatrix": "MeshMatrix",
+    "Material" : "Material"
+},
+    "uniform_buffer_map": {"World": 2},
+    "texture_map": {
+        "BaseTexture" : ["BaseColor", 0],
+	"EmissionTexture": ["Emission", 1],
+	"MRTexture": ["MetallicRoughness", 2],
+	"OcclusionTexture": ["Occlusion", 3]
+    }
+    
+}

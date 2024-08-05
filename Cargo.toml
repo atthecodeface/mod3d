@@ -1,0 +1,126 @@
+[workspace]
+resolver = "2"
+members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "shapes"]
+# default-members = ["prelude"]
+
+[package]
+edition = "2021"
+version = "0.1.0"
+name = "mod3d"
+description = "3D Models for Gl processing\n"
+homepage = "https://github.com/atthecodeface/model3d"
+documentation = "https://docs.rs/mod3d"
+keywords = ["geometry"]
+categories = ["graphics"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/atthecodeface/model3d"
+
+[dependencies]
+mod3d-base.workspace = true
+mod3d-gl.workspace = true
+mod3d-gltf.workspace = true
+mod3d-gl-sdl-example.workspace = true
+mod3d-gl-wasm-example.workspace = true
+mod3d-shapes.workspace = true
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+# name = "mod3d"
+description = "3D Models for Gl processing\n"
+homepage = "https://github.com/atthecodeface/model3d"
+documentation = "https://docs.rs/mod3d"
+keywords = ["geometry"]
+categories = ["graphics"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/atthecodeface/model3d"
+
+# Note that workspace dependencies cannot be optional
+[workspace.dependencies]
+mod3d-base = { version = "0.4.0", path = "./base" }
+mod3d-shapes = {version = "0.1", path= "./shapes" }
+mod3d-gl = {version = "0.1", path= "./gl" }
+mod3d-gltf = {version = "0.1", path= "./gltf" }
+mod3d-gl-sdl-example = {version = "0.1", path= "./gl_sdl_example" }
+mod3d-gl-wasm-example = {version = "0.1", path= "./gl_wasm_example" }
+
+[workspace.dependencies.indent-display]
+version = ">=0.1.1"
+
+[workspace.dependencies.base64]
+version = ">=0.22.1"
+
+[workspace.dependencies.index_vec]
+version = ">=0.1.3"
+features = ["serde"]
+
+# [workspace.dependencies.bytemuck]
+# version = ">=1.15.0"
+# features = ["derive"]
+
+# [workspace.dependencies.wgpu]
+# version = ">=0.19"
+
+[workspace.dependencies.serde]
+version = "1.0"
+features = ["derive", "alloc"]
+
+[workspace.dependencies.serde_json]
+version = ">=1.0.120"
+
+[workspace.dependencies.thiserror]
+version = ">=1.0.61"
+
+[workspace.dependencies.geo-nd]
+version = ">=0.5.2"
+path = "../geo-nd-rs"
+
+[workspace.dependencies.clap]
+version = "4.5.2"
+features = ["string"]
+
+[workspace.dependencies.gl]
+version = ">=0.14.0"
+
+[workspace.dependencies.anyhow]
+version = ">=1.0.86"
+
+[workspace.dependencies.image]
+version = ">=0.25"
+default-features = false
+features = ["jpeg", "png"]
+
+[workspace.dependencies.sdl2]
+version = "0.37.0"
+features = ["bundled", "static-link"]
+
+[workspace.dependencies.wasm-bindgen]
+version = ">=0.2.92"
+
+[workspace.dependencies.js-sys]
+version = ">=0.3.64"
+
+[workspace.dependencies.web-sys]
+version = ">=0.3.69"
+features = [
+  'console',
+  'CanvasRenderingContext2d',
+  'Document',
+  'EventTarget',
+  'Element',
+  'HtmlCanvasElement',
+  'HtmlElement',
+  'MouseEvent',
+  'WebGlBuffer',
+  'WebGlVertexArrayObject',
+  'WebGl2RenderingContext',
+  'WebGlProgram',
+  'WebGlShader',
+  'WebGlTexture',
+  'WebGlUniformLocation',
+  'Window',
+]
+
+[workspace.dependencies.console_error_panic_hook]
+version = "0.1"
+
