@@ -6,6 +6,7 @@ use crate::objects;
 
 //a Light, WorldData
 #[derive(Debug, Default)]
+#[repr(C)]
 pub struct Light {
     position: mod3d_gl::Vec4,
     color: mod3d_gl::Vec4,
