@@ -1,7 +1,7 @@
 //a Imports
 use std::path::Path;
 
-pub fn read_file(shader_paths: &[&Path], filename: &str) -> Result<String, String> {
+pub fn read_file(shader_paths: &[&Path], filename: &str) -> Result<String, anyhow::Error> {
     if let Ok(x) = std::fs::read_to_string(filename) {
         Ok(x)
     } else {
@@ -12,6 +12,6 @@ pub fn read_file(shader_paths: &[&Path], filename: &str) -> Result<String, Strin
                 return Ok(x);
             }
         }
-        Err(format!("Failed to read shader program {filename}"))
+        Err(anyhow::anyhow!("Failed to read shader program {filename}"))
     }
 }

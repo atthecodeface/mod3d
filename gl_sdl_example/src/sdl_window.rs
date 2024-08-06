@@ -1,3 +1,5 @@
+use crate::types::Event;
+
 pub struct SdlWindow {
     sdl: sdl2::Sdl,
     window: sdl2::video::Window,
@@ -46,6 +48,28 @@ impl SdlWindow {
         unsafe { gl::Enable(gl::DEPTH_TEST) };
         mod3d_gl::opengl_utils::check_errors().unwrap();
     }
+    pub fn resize_viewport(&self, x: isize, y: isize, w: usize, h: usize) {
+        unsafe { gl::Viewport(x as i32, y as i32, w as i32, h as i32) };
+    }
+    pub fn event_poll(&mut self) -> Event {
+        while let Some(e) = self.event_pump.poll_event() {
+            match e {
+                sdl2::event::Event::Quit { .. } => {
+                    return Event::Quit;
+                }
+                sdl2::event::Event::Window {
+                    win_event: sdl2::event::WindowEvent::Resized(w, h),
+                    ..
+                } => {
+                    let w = w.max(0) as usize;
+                    let h = h.max(0) as usize;
+                    return Event::ResizeWindow(w, h);
+                }
+                _ => (),
+            }
+        }
+        Event::None
+    }
     pub fn clear_framebuffer(&self) {
         mod3d_gl::opengl_utils::check_errors().unwrap();
 
@@ -57,11 +81,5 @@ impl SdlWindow {
         mod3d_gl::opengl_utils::check_errors().unwrap();
 
         self.window.gl_swap_window();
-    }
-    pub fn prepare_event_loop(&mut self) {}
-    pub fn event_poll<'iter>(
-        &'iter mut self,
-    ) -> impl std::iter::Iterator<Item = sdl2::event::Event> + 'iter {
-        self.event_pump.poll_iter()
     }
 }

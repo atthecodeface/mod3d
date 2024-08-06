@@ -1,11 +1,8 @@
 //a Imports
-use std::path::Path;
-
 use mod3d_base::Instance;
 use mod3d_gl::{Gl, ShaderInstantiable, UniformBuffer};
 
 use crate::objects;
-use crate::utils::read_file;
 
 //a Light, WorldData
 #[derive(Debug, Default)]
@@ -53,13 +50,10 @@ impl<G: Gl> Base<G> {
     //fp new
     pub fn new(
         gl: &mut G,
-        shader_paths: &[&Path],
-        shader: &mod3d_gl::ShaderProgramDesc,
+        shader_program: G::Program,
         filename: &str,
         node_names: &[&str],
     ) -> Result<Self, String> {
-        let shader_program = shader.compile(gl, &|filename| read_file(shader_paths, filename))?;
-
         // Use uniform binding point 1 for the material
         //
         // Note that these do not have to match the program's uniform
