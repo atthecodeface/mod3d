@@ -1,5 +1,5 @@
 // ./target/release/mod3d-gl-sdl-example --shader sdp.json --node 0 --scale 0.1 --glb MetalRoughSpheres.glb
-use clap::{value_parser, Arg, ArgAction, Command};
+use clap::{value_parser, Arg, ArgAction, ArgMatches, Command};
 
 use mod3d_gl::Model3DOpenGL;
 
@@ -51,6 +51,70 @@ pub fn add_scale_arg(cmd: Command) -> Command {
     )
 }
 
+fn load_shader_program(matches: &ArgMatches) -> Result<mod3d_gl::ShaderProgramDesc, anyhow::Error> {
+    let shader_filename = matches.get_one::<String>("shader").unwrap();
+    let shader = std::fs::read_to_string(shader_filename)?;
+    Ok(serde_json::from_str(&shader)?)
+}
+struct SdlWindow {
+    sdl: sdl2::Sdl,
+    window: sdl2::video::Window,
+    gl_context: sdl2::video::GLContext,
+}
+impl SdlWindow {
+    fn new() -> Result<Self, anyhow::Error> {
+        let sdl = sdl2::init().unwrap();
+        let video_subsystem = sdl.video().unwrap();
+
+        let gl_attr = video_subsystem.gl_attr();
+
+        gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
+        gl_attr.set_context_version(4, 1);
+
+        let window = video_subsystem
+            .window("Game", 900, 700)
+            .opengl()
+            .resizable()
+            .build()
+            .unwrap();
+
+        let gl_context = window.gl_create_context().map_err(anyhow::Error::msg)?;
+        gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+        Ok(SdlWindow {
+            sdl,
+            window,
+            gl_context,
+        })
+    }
+    fn prepare_viewport(&self) {
+        unsafe {
+            let (w, h) = self.window.drawable_size();
+            let w = w as i32;
+            let h = h as i32;
+            gl::Viewport(0, 0, w, h);
+            gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+        }
+
+        mod3d_gl::opengl_utils::check_errors().unwrap();
+        // These are not flags
+        // unsafe { gl::Enable(gl::CULL_FACE) };
+        unsafe { gl::Enable(gl::DEPTH_TEST) };
+        mod3d_gl::opengl_utils::check_errors().unwrap();
+    }
+    fn clear_framebuffer(&self) {
+        mod3d_gl::opengl_utils::check_errors().unwrap();
+
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        }
+    }
+    fn swap_framebuffer(&self) {
+        mod3d_gl::opengl_utils::check_errors().unwrap();
+
+        self.window.gl_swap_window();
+    }
+}
+
 fn main() -> Result<(), anyhow::Error> {
     let cmd = Command::new("gltf_viewer")
         .about("Gltf viewer")
@@ -64,7 +128,6 @@ fn main() -> Result<(), anyhow::Error> {
     let scale = *matches.get_one::<f32>("scale").unwrap();
 
     let glb_filename = matches.get_one::<String>("glb").unwrap();
-    let shader_filename = matches.get_one::<String>("shader").unwrap();
     let mut node_names = vec![];
     if let Some(values) = matches.get_many::<String>("node") {
         for v in values {
@@ -75,31 +138,14 @@ fn main() -> Result<(), anyhow::Error> {
     }
     let node_name_refs: Vec<&str> = node_names.iter().map(|s| &**s).collect();
 
-    let shader = std::fs::read_to_string(shader_filename)?;
-    let shader_program_desc: mod3d_gl::ShaderProgramDesc = serde_json::from_str(&shader)?;
+    let shader_program_desc = load_shader_program(&matches)?;
 
-    let sdl = sdl2::init().unwrap();
-    let video_subsystem = sdl.video().unwrap();
-
-    let gl_attr = video_subsystem.gl_attr();
-
-    gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-    gl_attr.set_context_version(4, 1);
-
-    let window = video_subsystem
-        .window("Game", 900, 700)
-        .opengl()
-        .resizable()
-        .build()
-        .unwrap();
-
-    let _gl_context = window.gl_create_context().map_err(anyhow::Error::msg)?;
-    gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+    let sdl_window = SdlWindow::new()?;
 
     let mut model3d = Model3DOpenGL::new();
-
     let base = model::Base::new(
         &mut model3d,
+        &[&std::path::Path::new("../")],
         &shader_program_desc,
         glb_filename,
         &node_name_refs,
@@ -109,23 +155,10 @@ fn main() -> Result<(), anyhow::Error> {
     let mut game_state = model::GameState::new(scale);
     let mut instances = base.make_instances();
 
-    unsafe {
-        let (w, h) = window.drawable_size();
-        let w = w as i32;
-        let h = h as i32;
-        gl::Viewport(0, 0, w, h);
-        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
-    }
-
-    mod3d_gl::opengl_utils::check_errors().unwrap();
+    sdl_window.prepare_viewport();
 
     // main loop
-    let mut event_pump = sdl.event_pump().unwrap();
-
-    // These are not flags
-    // unsafe { gl::Enable(gl::CULL_FACE) };
-    unsafe { gl::Enable(gl::DEPTH_TEST) };
-    mod3d_gl::opengl_utils::check_errors().unwrap();
+    let mut event_pump = sdl_window.sdl.event_pump().unwrap();
 
     'main: loop {
         for event in event_pump.poll_iter() {
@@ -146,21 +179,15 @@ fn main() -> Result<(), anyhow::Error> {
             }
         }
 
-        mod3d_gl::opengl_utils::check_errors().unwrap();
-
-        unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-        }
-
+        sdl_window.clear_framebuffer();
         base.update(
             &mut model3d,
             &mut game_state,
             &instantiables,
             &mut instances,
         );
-        mod3d_gl::opengl_utils::check_errors().unwrap();
+        sdl_window.swap_framebuffer();
 
-        window.gl_swap_window();
         let ten_millis = std::time::Duration::from_millis(10);
         // let pre = std::time::Instant::now();
         std::thread::sleep(ten_millis);

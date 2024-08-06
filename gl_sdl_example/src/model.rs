@@ -1,8 +1,25 @@
 //a Imports
+use std::path::Path;
+
 use mod3d_base::Instance;
 use mod3d_gl::{Gl, ShaderInstantiable, UniformBuffer};
 
 use crate::objects;
+
+fn read_file(shader_paths: &[&Path], filename: &str) -> Result<String, String> {
+    if let Ok(x) = std::fs::read_to_string(filename) {
+        Ok(x)
+    } else {
+        for p in shader_paths {
+            let pb = p.join(filename);
+            if let Ok(x) = std::fs::read_to_string(&pb) {
+                println!("Shader: {x}");
+                return Ok(x);
+            }
+        }
+        Err(format!("Failed to read shader program {filename}"))
+    }
+}
 
 //a Light, WorldData
 #[derive(Debug, Default)]
@@ -50,15 +67,12 @@ impl<G: Gl> Base<G> {
     //fp new
     pub fn new(
         gl: &mut G,
+        shader_paths: &[&Path],
         shader: &mod3d_gl::ShaderProgramDesc,
         filename: &str,
         node_names: &[&str],
     ) -> Result<Self, String> {
-        fn read_file(filename: &str) -> Result<String, String> {
-            std::fs::read_to_string(filename)
-                .map_err(|e| format!("Failed to read shader program {filename}: {}", e))
-        }
-        let shader_program = shader.compile(gl, &read_file)?;
+        let shader_program = shader.compile(gl, &|filename| read_file(shader_paths, filename))?;
 
         // Use uniform binding point 1 for the material
         //
