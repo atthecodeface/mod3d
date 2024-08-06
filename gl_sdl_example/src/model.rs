@@ -5,21 +5,7 @@ use mod3d_base::Instance;
 use mod3d_gl::{Gl, ShaderInstantiable, UniformBuffer};
 
 use crate::objects;
-
-fn read_file(shader_paths: &[&Path], filename: &str) -> Result<String, String> {
-    if let Ok(x) = std::fs::read_to_string(filename) {
-        Ok(x)
-    } else {
-        for p in shader_paths {
-            let pb = p.join(filename);
-            if let Ok(x) = std::fs::read_to_string(&pb) {
-                println!("Shader: {x}");
-                return Ok(x);
-            }
-        }
-        Err(format!("Failed to read shader program {filename}"))
-    }
-}
+use crate::utils::read_file;
 
 //a Light, WorldData
 #[derive(Debug, Default)]
