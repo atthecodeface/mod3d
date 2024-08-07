@@ -29,8 +29,8 @@ pub use texture::Texture;
 mod buffer;
 pub use buffer::{BufferView, IndexBuffer, UniformBuffer, VertexBuffer};
 
-mod program;
-pub use program::ShaderProgramDesc;
+mod pipeline;
+pub use pipeline::PipelineDesc;
 
 mod vertices;
 pub use vertices::Vertices;

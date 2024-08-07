@@ -82,7 +82,7 @@ mod deserialize {
 }
 
 #[cfg_attr(feature = "serde", derive(Deserialize))]
-pub struct ShaderProgramDesc {
+pub struct PipelineDesc {
     /// The vertex shader path name
     vertex_src: String,
 
@@ -114,7 +114,7 @@ pub struct ShaderProgramDesc {
     texture_map: Vec<(String, TextureId, usize)>,
 }
 
-impl ShaderProgramDesc {
+impl PipelineDesc {
     pub fn compile<F, G>(&self, gl: &G, read_src: &F) -> Result<<G as Gl>::Program, String>
     where
         F: Fn(&str) -> Result<String, String>,
