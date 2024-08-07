@@ -58,7 +58,7 @@ impl<G: Gl> Base<G> {
     pub fn new(
         gl: &mut G,
         files: &HashMap<String, Vec<u8>>,
-        shader: &mod3d_gl::PipelineDesc,
+        shader: Box<G::PipelineDesc>,
         filename: &str,
         node_names: &[&str],
     ) -> Result<Self, String> {
@@ -71,7 +71,7 @@ impl<G: Gl> Base<G> {
                 Err(format!("Failed to find shader program {filename}"))
             }
         }
-        let shader_program = shader.compile(gl, &|f| read_file(files, f))?;
+        let shader_program = gl.create_pipeline(&|f| read_file(files, f), shader)?;
 
         let material_uid = 1;
         let world_uid = 2;

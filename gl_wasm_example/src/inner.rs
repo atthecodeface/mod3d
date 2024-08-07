@@ -101,7 +101,7 @@ impl Inner {
         let m = Box::new(crate::model::Base::new(
             &mut self.model3d,
             &self.files,
-            &shader_program_desc,
+            Box::new(shader_program_desc),
             glb,
             node_names,
         )?);
