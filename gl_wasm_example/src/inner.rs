@@ -95,7 +95,7 @@ impl Inner {
             .get(shader_filename)
             .ok_or_else(|| format!("Failed to find shader file {shader_filename}"))?;
         let shader = std::str::from_utf8(shader).map_err(|_| "Bad UTF8 for shader".to_string())?;
-        let shader_program_desc: mod3d_gl::ShaderProgramDesc = serde_json::from_str(&shader)
+        let shader_program_desc: mod3d_gl::PipelineDesc = serde_json::from_str(&shader)
             .map_err(|e| format!("Failed to parse shader desc {e}"))?;
 
         let m = Box::new(crate::model::Base::new(

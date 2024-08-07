@@ -6,9 +6,6 @@ use web_sys::HtmlCanvasElement;
 
 mod inner;
 use inner::Inner;
-// pub mod shader;
-
-// mod base_shader;
 mod model;
 mod objects;
 
