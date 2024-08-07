@@ -115,44 +115,32 @@ pub struct PipelineDesc {
 }
 
 impl PipelineDesc {
-    pub fn compile<F, G>(&self, gl: &G, read_src: &F) -> Result<<G as Gl>::Program, String>
+    pub fn compile<F, CP, P>(
+        self: Box<Self>,
+        read_src: &F,
+        compile_and_link_program: &CP,
+    ) -> Result<P, String>
     where
         F: Fn(&str) -> Result<String, String>,
-        G: Gl,
+        CP: Fn(
+            String,
+            String,
+            Vec<(String, mod3d_base::VertexAttr)>,
+            Vec<(String, crate::UniformId)>,
+            HashMap<String, usize>,
+            Vec<(String, crate::TextureId, usize)>,
+        ) -> Result<P, String>,
     {
         let frag_src = read_src(&self.fragment_src)?;
         let vert_src = read_src(&self.vertex_src)?;
 
-        let frag_shader = gl.compile_shader(GlShaderType::Fragment, &frag_src)?;
-        let vert_shader = gl.compile_shader(GlShaderType::Vertex, &vert_src)?;
-
-        let named_attrs: Vec<(&str, mod3d_base::VertexAttr)> = self
-            .attribute_map
-            .iter()
-            .map(|(s, a)| (s.as_str(), *a))
-            .collect();
-        let named_uniforms: Vec<(&str, UniformId)> = self
-            .uniform_map
-            .iter()
-            .map(|(s, a)| (s.as_str(), *a))
-            .collect();
-        let named_uniform_buffers: Vec<(&str, usize)> = self
-            .uniform_buffer_map
-            .iter()
-            .map(|(s, a)| (s.as_str(), *a))
-            .collect();
-        let named_textures: Vec<(&str, TextureId, usize)> = self
-            .texture_map
-            .iter()
-            .map(|(s, t, u)| (s.as_str(), *t, *u))
-            .collect();
-        let program = gl.link_program(
-            &[&vert_shader, &frag_shader],
-            &named_attrs,
-            &named_uniforms,
-            &named_uniform_buffers,
-            &named_textures,
-        )?;
-        Ok(program)
+        compile_and_link_program(
+            vert_src,
+            frag_src,
+            self.attribute_map,
+            self.uniform_map,
+            self.uniform_buffer_map,
+            self.texture_map,
+        )
     }
 }

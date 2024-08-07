@@ -1,4 +1,7 @@
 //a Imports
+#[cfg(feature="serde")]
+use serde::{Deserialize};
+
 use crate::{BufferView, UniformBuffer};
 use crate::{Mat4, TextureId, UniformId};
 use crate::{Material, Vertices};
@@ -74,34 +77,17 @@ pub trait Gl:
     type Buffer: GlBuffer;
     type Vao: GlVao;
     type Texture;
+    #[cfg(feature="serde")]
+    type PipelineDesc<'a> : Deserialize<'a>;
+    #[cfg(not(feature="serde"))]
     type PipelineDesc;
 
-    fn create_pipeline<F>(&mut self,
+    fn create_pipeline<F: Fn(&str) -> Result<String, String>>(&mut self,
                           read_src: &F,
-                          pipeline_desc: &Self::PipelineDesc,
+                          pipeline_desc: Box<Self::PipelineDesc<'_>>,
     ) -> Result<Self::Program, String>
-    where
-        F: Fn(&str) -> Result<String, String>;
+;
     
-    //fp link_program
-    /// Create a program from a list of compiled shaders
-    fn link_program(
-        &self,
-        srcs: &[&Self::Shader],
-        named_attrs: &[(&str, mod3d_base::VertexAttr)],
-        named_uniforms: &[(&str, UniformId)],
-        named_uniform_buffers: &[(&str, usize)],
-        named_textures: &[(&str, crate::TextureId, usize)],
-    ) -> Result<Self::Program, String> {Err("Link program not implemented for this Gl type".to_string())}
-
-    //fp compile_shader
-    /// Compile a shader
-    fn compile_shader(
-        &self,
-        shader_type: GlShaderType,
-        source: &str,
-    ) -> Result<Self::Shader, String>;
-
     //fp use_program
     /// Use the program
     fn use_program(&self, program: Option<&Self::Program>);

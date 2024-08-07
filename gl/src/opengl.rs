@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use mod3d_base::{BufferAccessor, BufferElementType, VertexAttr};
 
 use crate::{Gl, GlProgram, GlShaderType, Mat4, PipelineDesc, UniformBuffer};
@@ -31,6 +33,36 @@ impl Model3DOpenGL {
     pub fn new() -> Self {
         Self {}
     }
+
+    //fp compile_and_link_program
+    /// Create a program from a list of compiled shaders
+    pub fn compile_and_link_program(
+        &self,
+        vertex_src: String,
+        fragment_src: String,
+        named_attrs: Vec<(String, mod3d_base::VertexAttr)>,
+        named_uniforms: Vec<(String, crate::UniformId)>,
+        named_uniform_buffers: HashMap<String, usize>,
+        named_textures: Vec<(String, crate::TextureId, usize)>,
+    ) -> Result<<Self as Gl>::Program, String> {
+        let vert_shader = Shader::compile(&vertex_src, GlShaderType::Vertex)?;
+        let frag_shader = Shader::compile(&fragment_src, GlShaderType::Fragment)?;
+
+        let mut program = Program::link_program(&[&vert_shader, &frag_shader])?;
+        for (name, attr) in named_attrs {
+            program.add_attr_name(&name, attr)?;
+        }
+        for (name, uniform) in named_uniforms {
+            program.add_uniform_name(&name, uniform)?;
+        }
+        for (name, uniform) in named_uniform_buffers {
+            program.add_uniform_buffer_name(&name, uniform)?;
+        }
+        for (name, texture_id, unit) in named_textures {
+            program.add_uniform_texture_name(&name, texture_id, unit)?;
+        }
+        Ok(program)
+    }
 }
 
 //ip Gl for Model3DOpenGL
@@ -41,53 +73,17 @@ impl Gl for Model3DOpenGL {
     type Buffer = buffer::Buffer;
     type Vao = vao::Vao;
     type Texture = texture::Texture;
-    type PipelineDesc = PipelineDesc;
+    type PipelineDesc<'a> = PipelineDesc;
 
-    fn create_pipeline<F>(
+    fn create_pipeline<F: Fn(&str) -> Result<String, String>>(
         &mut self,
         read_src: &F,
-        pipeline_desc: &Self::PipelineDesc,
-    ) -> Result<Self::Program, String>
-    where
-        F: Fn(&str) -> Result<String, String>,
-    {
-        pipeline_desc.compile(self, read_src)
-    }
-
-    //mp link_program
-    /// Create a program from a list of compiled shaders
-    fn link_program(
-        &self,
-        srcs: &[&Self::Shader],
-        named_attrs: &[(&str, VertexAttr)],
-        named_uniforms: &[(&str, crate::UniformId)],
-        named_uniform_buffers: &[(&str, usize)],
-        named_textures: &[(&str, crate::TextureId, usize)],
+        pipeline_desc: Box<Self::PipelineDesc<'_>>,
     ) -> Result<Self::Program, String> {
-        let mut program = Program::link_program(srcs)?;
-        for (name, attr) in named_attrs {
-            program.add_attr_name(name, *attr)?;
-        }
-        for (name, uniform) in named_uniforms {
-            program.add_uniform_name(name, *uniform)?;
-        }
-        for (name, uniform) in named_uniform_buffers {
-            program.add_uniform_buffer_name(name, *uniform)?;
-        }
-        for (name, texture_id, unit) in named_textures {
-            program.add_uniform_texture_name(name, *texture_id, *unit)?;
-        }
-        Ok(program)
-    }
-
-    //mp compile_shader
-    /// Compile a shader
-    fn compile_shader(
-        &self,
-        shader_type: GlShaderType,
-        source: &str,
-    ) -> Result<Self::Shader, String> {
-        Shader::compile(source, shader_type)
+        let compile_and_link_program = |v_src, f_src, na, nu, nub, nt| {
+            self.compile_and_link_program(v_src, f_src, na, nu, nub, nt)
+        };
+        pipeline_desc.compile(read_src, &compile_and_link_program)
     }
 
     //mp use_program
