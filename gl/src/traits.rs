@@ -74,7 +74,15 @@ pub trait Gl:
     type Buffer: GlBuffer;
     type Vao: GlVao;
     type Texture;
+    type PipelineDesc;
 
+    fn create_pipeline<F>(&mut self,
+                          read_src: &F,
+                          pipeline_desc: &Self::PipelineDesc,
+    ) -> Result<Self::Program, String>
+    where
+        F: Fn(&str) -> Result<String, String>;
+    
     //fp link_program
     /// Create a program from a list of compiled shaders
     fn link_program(
@@ -84,7 +92,7 @@ pub trait Gl:
         named_uniforms: &[(&str, UniformId)],
         named_uniform_buffers: &[(&str, usize)],
         named_textures: &[(&str, crate::TextureId, usize)],
-    ) -> Result<Self::Program, String>;
+    ) -> Result<Self::Program, String> {Err("Link program not implemented for this Gl type".to_string())}
 
     //fp compile_shader
     /// Compile a shader

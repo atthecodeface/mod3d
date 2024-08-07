@@ -1,7 +1,7 @@
 //a Imports
 use crate::console_log;
 use crate::webgl_log::log_gl_vao;
-use crate::{Gl, GlProgram, GlShaderType, Mat4, UniformBuffer};
+use crate::{Gl, GlProgram, GlShaderType, Mat4, PipelineDesc, UniformBuffer};
 use web_sys::WebGl2RenderingContext;
 
 mod shader;
@@ -49,6 +49,19 @@ impl Gl for Model3DWebGL {
     type Buffer = buffer::Buffer;
     type Vao = vao::Vao;
     type Texture = texture::Texture;
+
+    type PipelineDesc = PipelineDesc;
+
+    fn create_pipeline<F>(
+        &mut self,
+        read_src: &F,
+        pipeline_desc: &Self::PipelineDesc,
+    ) -> Result<Self::Program, String>
+    where
+        F: Fn(&str) -> Result<String, String>,
+    {
+        pipeline_desc.compile(self, read_src)
+    }
 
     //fp link_program
     /// Create a program from a list of compiled shaders

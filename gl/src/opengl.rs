@@ -1,6 +1,6 @@
 use mod3d_base::{BufferAccessor, BufferElementType, VertexAttr};
 
-use crate::{Gl, GlProgram, GlShaderType, Mat4, UniformBuffer};
+use crate::{Gl, GlProgram, GlShaderType, Mat4, PipelineDesc, UniformBuffer};
 
 mod shader;
 pub mod utils;
@@ -41,6 +41,18 @@ impl Gl for Model3DOpenGL {
     type Buffer = buffer::Buffer;
     type Vao = vao::Vao;
     type Texture = texture::Texture;
+    type PipelineDesc = PipelineDesc;
+
+    fn create_pipeline<F>(
+        &mut self,
+        read_src: &F,
+        pipeline_desc: &Self::PipelineDesc,
+    ) -> Result<Self::Program, String>
+    where
+        F: Fn(&str) -> Result<String, String>,
+    {
+        pipeline_desc.compile(self, read_src)
+    }
 
     //mp link_program
     /// Create a program from a list of compiled shaders
