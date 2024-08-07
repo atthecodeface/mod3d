@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "gl_wgpu_example", "shapes"]
+# members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "shapes"]
 # default-members = ["prelude"]
 
 [package]
