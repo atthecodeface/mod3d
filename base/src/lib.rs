@@ -3,9 +3,22 @@
 #![warn(rustdoc::missing_doc_code_examples)]
 
 /*!
+# Done
+
+Changed to SInt and UInt in ele type
+
+Added BufferDescriptor
+
 # TODO
 
-Replace ByteBuffer with T:AsRef<[u8]>
+Decided not to replace ByteBuffer with T:AsRef<[u8]>; this would
+require clients to still cast Vec<> etc to a something-of-u8
+
+Need to make BufferDataAccessor refer to a BufferDescriptor
+
+Need to add BufferIndexAccessor
+
+Move to thiserror
 
 Make Vertices have an option<indices> and update renderable vertices clients
 
@@ -491,7 +504,7 @@ pub use types::BufferElementType;
 pub use types::MaterialAspect;
 pub use types::ShortIndex;
 pub use types::{Mat3, Mat4, Quat, Vec3, Vec4};
-pub use types::{PrimitiveType, VertexAttr};
+pub use types::{PrimitiveType, VertexAttr, VertexDesc};
 
 //a To do
 //
@@ -515,15 +528,17 @@ pub use skeleton_pose::SkeletonPose;
 
 mod buffer_accessor;
 mod buffer_data;
+mod buffer_descriptor;
 mod byte_buffer;
 pub use buffer_accessor::BufferAccessor;
 pub use buffer_data::BufferData;
+pub use buffer_descriptor::BufferDescriptor;
 pub use byte_buffer::ByteBuffer;
 
 mod traits;
 pub use traits::{
-    AccessorClient, BufferClient, Material, MaterialClient, Renderable, TextureClient,
-    VerticesClient,
+    AccessorClient, BufferClient, DescriptorClient, Material, MaterialClient, Renderable,
+    TextureClient, VerticesClient,
 };
 
 mod texture;

@@ -70,12 +70,12 @@ impl<T> ByteBuffer for Vec<T> {
 impl<T> ByteBuffer for &[T] {
     //fp byte_length
     fn byte_length(&self) -> usize {
-        std::mem::size_of::<T>() * self.len()
+        std::mem::size_of_val(*self)
     }
 
     //fp borrow_bytes
     fn borrow_bytes(&self) -> &[u8] {
-        let len = std::mem::size_of::<T>() * self.len();
+        let len = std::mem::size_of_val(*self);
         let data = self.as_u8_ptr();
         unsafe { std::slice::from_raw_parts(data, len) }
     }

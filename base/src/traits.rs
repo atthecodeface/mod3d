@@ -1,5 +1,5 @@
 use crate::{BufferAccessor, BufferData, Texture, VertexAttr, Vertices};
-use crate::{MaterialAspect, MaterialBaseData, ShortIndex};
+use crate::{BufferDescriptor, MaterialAspect, MaterialBaseData, ShortIndex};
 
 //a BufferClient
 //tt BufferClient
@@ -24,6 +24,20 @@ pub trait BufferClient:
 /// The data may be created more than once with the same buffer; the client
 /// is responsible for dedupliclation within the render context if required
 pub trait AccessorClient:
+    Sized + std::fmt::Display + std::fmt::Debug + std::default::Default + Clone
+{
+}
+
+//tt DescriptorClient
+/// Trait supported by a BufferDescriptor client
+///
+/// A buffer descriptor client is created first by a buffer as 'none'
+///
+/// Before a descriptor is created the data will be created at least once
+///
+/// The data may be created more than once with the same descriptor; the client
+/// is responsible for dedupliclation within the render context if required
+pub trait DescriptorClient:
     Sized + std::fmt::Display + std::fmt::Debug + std::default::Default + Clone
 {
 }
@@ -62,6 +76,8 @@ pub trait Renderable: Sized {
     type Buffer: BufferClient;
     /// The renderer's type that reflects a [BufferAccessor]
     type Accessor: AccessorClient;
+    /// The renderer's type that reflects a [BufferDescriptor]
+    type Descriptor: DescriptorClient;
     /// The renderer's type that represents a texture; this is
     /// supplied to material creation, and hence is less a product of
     /// the renderer and more an input to the 3D model library
@@ -80,6 +96,12 @@ pub trait Renderable: Sized {
         &mut self,
         client: &mut Self::Buffer,
         buffer_data: &BufferData<Self>,
+    );
+    /// Initialize a buffer data client - it will have been created using default()
+    fn init_buffer_desc_client(
+        &mut self,
+        client: &mut Self::Descriptor,
+        buffer_desc: &BufferDescriptor<Self>,
     );
     /// Initialize a buffer view client
     fn init_buffer_view_client(

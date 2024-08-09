@@ -2,8 +2,9 @@
 use std::rc::Rc;
 
 use crate::{
-    AccessorClient, BufferAccessor, BufferClient, BufferData, Material, MaterialClient, Renderable,
-    Texture, TextureClient, VertexAttr, Vertices, VerticesClient,
+    AccessorClient, BufferAccessor, BufferClient, BufferData, BufferDescriptor, DescriptorClient,
+    Material, MaterialClient, Renderable, Texture, TextureClient, VertexAttr, Vertices,
+    VerticesClient,
 };
 
 //a Buffer
@@ -52,6 +53,9 @@ impl std::fmt::Display for Id {
     }
 }
 
+//ip DescriptorClient for Buffer
+impl DescriptorClient for Buffer {}
+
 //ip MaterialClient for Id
 impl MaterialClient for Id {}
 
@@ -65,11 +69,20 @@ impl VerticesClient for Id {}
 impl Renderable for Id {
     type Buffer = Buffer;
     type Accessor = Buffer;
+    type Descriptor = Buffer;
     type Texture = Id;
     type Material = Id;
     type Vertices = Id;
     fn init_buffer_data_client(&mut self, _buffer: &mut Buffer, _data: &BufferData<Self>) {
         // No need to do anything; the
+    }
+    fn init_buffer_desc_client(
+        &mut self,
+        client: &mut Self::Descriptor,
+        buffer_desc: &BufferDescriptor<Self>,
+    ) {
+        buffer_desc.data.create_client(self);
+        *client = buffer_desc.data.borrow_client().clone();
     }
     fn init_buffer_view_client(
         &mut self,

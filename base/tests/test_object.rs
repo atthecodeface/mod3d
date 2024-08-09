@@ -26,7 +26,6 @@ fn test0() {
     drop(x); // so we can desconstruct obj
     let inst = obj
         .into_instantiable(&mut Default::default())
-        .map_err(|(_, e)| e)
         .expect("Failed to make the object instantiable");
     let r = &inst.render_recipe;
     assert_eq!(r.matrices.len(), 1, "Expected only an identity matrix");

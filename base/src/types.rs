@@ -27,17 +27,25 @@ pub type Quat = [f32; 4];
 //tp BufferElementType
 /// The type of an element in a buffer
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(u8)]
 pub enum BufferElementType {
     /// 32-bit floating point
     Float32,
     /// 16-bit floating point
     Float16,
-    /// 8-bit integers
-    Int8,
-    /// 16-bit integers
-    Int16,
-    /// 32-bit integers
-    Int32,
+    /// Signed 8-bit integers
+    SInt8,
+    /// Signed 16-bit integers
+    SInt16,
+    /// Signed 32-bit integers
+    SInt32,
+    /// Unsigned 8-bit integers
+    UInt8,
+    /// Unsigned 16-bit integers
+    UInt16,
+    /// Unsigned 32-bit integers
+    UInt32,
 }
 
 //ip BufferElementType
@@ -48,11 +56,24 @@ impl BufferElementType {
         match self {
             Float32 => 4,
             Float16 => 2,
-            Int8 => 1,
-            Int16 => 2,
-            Int32 => 4,
+            SInt8 => 1,
+            SInt16 => 2,
+            SInt32 => 4,
+            UInt8 => 1,
+            UInt16 => 2,
+            UInt32 => 4,
         }
     }
+}
+
+//tp VertexDesc
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct VertexDesc {
+    attr: VertexAttr,
+    byte_offset: u16,
+    dims: [u8; 2],
+    ele_type: BufferElementType,
 }
 
 //a Drawing
@@ -61,6 +82,7 @@ impl BufferElementType {
 /// additional attributes may or maynot be provided by a model
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(u8)]
 pub enum VertexAttr {
     /// Indices
     Indices,

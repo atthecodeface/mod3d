@@ -22,7 +22,7 @@ pub fn new<R: Renderable>(eg: &mut ExampleVertices<R>, size: f32) {
     let data_vertices = eg.push_byte_buffer(Box::new(vertex_data));
     let data_indices = eg.push_byte_buffer(Box::new(index_data));
 
-    let indices = eg.push_accessor(data_indices, 3, BufferElementType::Int8, 0, 0);
+    let indices = eg.push_accessor(data_indices, 3, BufferElementType::UInt8, 0, 0);
     let vertices = eg.push_accessor(data_vertices, 3, BufferElementType::Float32, 0, 0);
     let normals = eg.push_accessor(data_vertices, 3, BufferElementType::Float32, 9 * 4, 0);
 

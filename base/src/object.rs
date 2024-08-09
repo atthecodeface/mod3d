@@ -165,7 +165,7 @@ where
     /// the object to be dropped, but the GPU-side objects (created by
     /// create_client) can be maintained. The [Instantiable] contains
     /// only instances of the types for the [Renderable].
-    pub fn into_instantiable(self, renderer: &mut R) -> Result<Instantiable<R>, (Self, String)> {
+    pub fn into_instantiable(self, renderer: &mut R) -> Result<Instantiable<R>, String> {
         for v in &self.vertices {
             v.create_client(renderer);
         }
