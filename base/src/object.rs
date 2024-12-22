@@ -165,7 +165,7 @@ where
     /// the object to be dropped, but the GPU-side objects (created by
     /// create_client) can be maintained. The [Instantiable] contains
     /// only instances of the types for the [Renderable].
-    pub fn into_instantiable(self, renderer: &mut R) -> Result<Instantiable<R>, String> {
+    pub fn into_instantiable(self, renderer: &mut R) -> Instantiable<R> {
         for v in &self.vertices {
             v.create_client(renderer);
         }
@@ -177,13 +177,13 @@ where
             .iter()
             .map(|m| renderer.create_material_client(&self, m))
             .collect();
-        Ok(Instantiable::<R>::new::<M>(
+        Instantiable::<R>::new::<M>(
             self.skeleton,
             self.vertices,
             self.textures,
             materials,
             self.components,
-        ))
+        )
     }
 
     //zz All done

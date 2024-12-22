@@ -18,8 +18,6 @@ Need to make BufferDataAccessor refer to a BufferDescriptor
 
 Need to add BufferIndexAccessor
 
-Move to thiserror
-
 Make Vertices have an option<indices> and update renderable vertices clients
 
 # 3D Model library
@@ -52,9 +50,35 @@ Hence this library provides for [Instantiable] object creation that
 first requires memory buffers to be allocated, descriptions of an
 object created; from this [Object] the [Instantiable] is made for a
 particular graphics library context - allowing the freeing of those
-firstt memory buffers. This [Instantiable] can then be instanced a
+first memory buffers. This [Instantiable] can then be instanced a
 number of times, and these [Instance] each have their own
 [Transformation] and [SkeletonPose].
+
+## Backends
+
+The model of programming and drawing for OpenGL and WebGL is to
+provide buffers to the GPU that separately contain vertex data and
+index data; the shader program is compiled and linked from separate
+sources; the individual vertex attributes used by the shader program
+are named in the program, and need to be mapped to the contents of the
+vertex buffers that need to be drawn. The vertex buffers thus need a
+mapping concept for an object's buffers that need to be drawn; this is
+the Vertex-Attribute-Object (VAO). Different objects can have
+different vertex attribute layouts within their buffers.
+
+Hence OpenGL/WebGL have programs that have program-specified named
+variables of vertex attributes; buffers for different objects can have
+different vertex layouts; VAOs map parts of buffers to the vertex
+attributes.
+
+WebGPU follows a different model; the shader program is a single
+source code (for vertex and fragment), which is compiled into a shader
+module; the shader module can be used in multiple RenderPipelines;
+each RenderPipeline specifies the layouts of the buffers, which maps
+the layout of the vertices in the buffers that are provided to it at
+draw time to the locations that the shader module expects. There is no
+need for a VAO; the eventual draw call uses buffers that are bound
+(prior to the draw; the operation is set pipeline, set buffers, draw).
 
 # Object creation
 
@@ -71,7 +95,8 @@ different parts of the object data.
 The library requries that a data buffer support the [ByteBuffer]
 trait, and then that data buffer can have [BufferData] views created
 onto it - portions of the data buffer. For particular vertex data a
-subset of [BufferData] is used to create a [BufferAccessor].
+subset of [BufferData] is used to create [BufferDataAccessor]s and for
+indices a [BufferIndexAccessor].
 
 A number of [BufferData] are pulled together to produce a [Vertices]
 object - this might describe all the points and drawing indices for a
@@ -107,8 +132,8 @@ GlBuffer handle). It is similar to a Gltf BufferView, without a
 The base concept for model [BufferData] is that it is an immutable
 borrow of a portion of some model data buffer of a type that supports
 the [ByteBuffer] trait; the data internally may be floats, ints, etc,
-or combinations thereof - from which one creates [BufferAccessor]s, or
-which it is itself used as model indices. So it can be the complete
+or combinations thereof - from which one creates [BufferDataAccessor]s, or
+[BufferIndexAccessor]s when used as model indices. So it can be the complete
 data for a whole set of models.
 
 Each [BufferData] has a related client element (a
@@ -116,28 +141,29 @@ Each [BufferData] has a related client element (a
 client structures created; this may be an Rc of an OpenGL buffer, if
 the client is an OpenGL renderer.
 
-Each [BufferData] is use through one or more [BufferAccessor].
+Each [BufferData] is use through one or more [BufferDataAccessor] or [BufferIndexAccessor].
 
-### {BufferAccessor]
+### [BufferDataAccessor], [BufferIndexAccessor]
 
-A [BufferAccessor] is an immutable reference to a subset of a [BufferData]. A [BufferAccessor]
+A [BufferDataAccessor] is an immutable reference to a subset of a [BufferData]. A [BufferDataAccessor]
 may, for example, be the vertex positions for one or more models; it may
 be texture coordinates; and so on. The [BufferData] corresponds on the
-OpenGL side to an ARRAY_BUFFER or an ELEMENT_ARRAY_BUFFER; hence it
+OpenGL side to an ARRAY_BUFFER or (for BufferIndexAccessor) an ELEMENT_ARRAY_BUFFER; hence it
 expects to have a VBO associated with it.
 
-The [BufferAccessor] is similar to a glTF Accessor.
+The [BufferDataAccessor] and [BufferIndexAccessor] are similar to a glTF Accessor.
 
-Each [BufferAccessor] has a related client element (a
+Each [BufferDataAccessor] has a related client element (a
 [Renderable::View]) which is created when an [Object] has its
 client structures created; this may be the data indicating the subset
 of the [Renderable::Buffer] that the view refers to, or perhaps a
 client buffer of its own.
 
-A set of [BufferAccessor]s are borrowed to describe [Vertices], each
-[BufferAccessor] providing one piece of vertex information (such as
-indices, position or normal). A single [BufferAccessor] may be used by
+A set of [BufferDataAccessor]s are borrowed to describe [Vertices], each
+[BufferDataAccessor] providing one piece of vertex information (position or normal). A single [BufferDataAccessor] may be used by
 more than one [Vertices] object.
+
+A [BufferIndexAccessor] may be borrowed to describe the indices for a [Vertices].
 
 ### [Vertices]
 
@@ -526,13 +552,15 @@ mod skeleton_pose;
 pub use skeleton::Skeleton;
 pub use skeleton_pose::SkeletonPose;
 
-mod buffer_accessor;
 mod buffer_data;
+mod buffer_data_accessor;
 mod buffer_descriptor;
+mod buffer_index_accessor;
 mod byte_buffer;
-pub use buffer_accessor::BufferAccessor;
 pub use buffer_data::BufferData;
+pub use buffer_data_accessor::BufferDataAccessor;
 pub use buffer_descriptor::BufferDescriptor;
+pub use buffer_index_accessor::BufferIndexAccessor;
 pub use byte_buffer::ByteBuffer;
 
 mod traits;

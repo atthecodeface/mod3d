@@ -1,4 +1,4 @@
-use crate::{BufferAccessor, BufferData, Texture, VertexAttr, Vertices};
+use crate::{BufferData, BufferDataAccessor, BufferIndexAccessor, Texture, VertexAttr, Vertices};
 use crate::{BufferDescriptor, MaterialAspect, MaterialBaseData, ShortIndex};
 
 //a BufferClient
@@ -74,8 +74,10 @@ pub trait VerticesClient: Sized + std::fmt::Debug + std::default::Default + Clon
 pub trait Renderable: Sized {
     /// The renderer's type that reflects a [BufferData]
     type Buffer: BufferClient;
-    /// The renderer's type that reflects a [BufferAccessor]
-    type Accessor: AccessorClient;
+    /// The renderer's type that reflects a [BufferDataAccessor]
+    type DataAccessor: AccessorClient;
+    /// The renderer's type that reflects a [BufferIndexAccessor]
+    type IndexAccessor: AccessorClient;
     /// The renderer's type that reflects a [BufferDescriptor]
     type Descriptor: DescriptorClient;
     /// The renderer's type that represents a texture; this is
@@ -103,11 +105,18 @@ pub trait Renderable: Sized {
         client: &mut Self::Descriptor,
         buffer_desc: &BufferDescriptor<Self>,
     );
-    /// Initialize a buffer view client
+    /// Initialize the client of an index accessor of a buffer data
+    fn init_index_accessor_client(
+        &mut self,
+        client: &mut Self::DataAccessor,
+        buffer_view: &BufferIndexAccessor<Self>,
+        attr: VertexAttr,
+    );
+    /// Initialize the client of a data accessor of a buffer data
     fn init_buffer_view_client(
         &mut self,
-        client: &mut Self::Accessor,
-        buffer_view: &BufferAccessor<Self>,
+        client: &mut Self::DataAccessor,
+        buffer_view: &BufferDataAccessor<Self>,
         attr: VertexAttr,
     );
     /// Create a client

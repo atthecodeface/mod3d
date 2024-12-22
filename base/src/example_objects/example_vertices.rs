@@ -2,8 +2,8 @@
 use std::cell::RefCell;
 
 use crate::{
-    BufferAccessor, BufferData, BufferElementType, ByteBuffer, Renderable, ShortIndex, VertexAttr,
-    Vertices,
+    BufferData, BufferDataAccessor, BufferElementType, BufferIndexAccessor, ByteBuffer, Renderable,
+    ShortIndex, VertexAttr, Vertices,
 };
 
 //a ExampleBuffers
@@ -48,10 +48,15 @@ impl<'buffers> Buffers<'buffers> {
 
 //a DataAccessors
 //tp DataAccessors
-/// This structure helps for objects
+/// This structure helps for objects; the data is
 pub struct DataAccessors<'buffers, R: Renderable> {
+    // data might be pinned, but the usage model here is to not permit
+    // data to change once accessors have started to be created, so
+    // the borrowed data (in accessors) cannot be modified once there
+    // are referernces to it.
     data: Vec<Box<BufferData<'buffers, R>>>,
-    accessors: Vec<Box<BufferAccessor<'buffers, R>>>,
+    index_accessors: Vec<Box<BufferIndexAccessor<'buffers, R>>>,
+    data_accessors: Vec<Box<BufferDataAccessor<'buffers, R>>>,
 }
 
 //ip DataAccessors
@@ -60,8 +65,13 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
     /// Create a new [DataAccessors]
     pub fn new() -> Self {
         let data = Vec::new();
-        let accessors = Vec::new();
-        Self { data, accessors }
+        let index_accessors = Vec::new();
+        let data_accessors = Vec::new();
+        Self {
+            data,
+            data_accessors,
+            index_accessors,
+        }
     }
 
     //fp push_buffer_data
@@ -80,9 +90,29 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
         n
     }
 
-    //fp push_accessor
+    //fp push_index_accessor
+    /// Create a new [BufferIndexAccessor] on a particular [BufferData] instance that has already been pushed
+    pub fn push_index_accessor(
+        &mut self,
+        data: usize,
+        num: u32,
+        et: BufferElementType,
+        ofs: u32,
+    ) -> usize {
+        let n = self.index_accessors.len();
+        let d = unsafe {
+            std::mem::transmute::<&BufferData<'_, R>, &'buffers BufferData<'buffers, R>>(
+                &self.data[data],
+            )
+        };
+        let accessor = Box::new(BufferIndexAccessor::new(d, num, et, ofs));
+        self.index_accessors.push(accessor);
+        n
+    }
+
+    //fp push_data_accessor
     /// Create a new [BufferAccessor] on a particular [BufferData] instance that has already been pushed
-    pub fn push_accessor(
+    pub fn push_data_accessor(
         &mut self,
         data: usize,
         num: u32,
@@ -90,26 +120,45 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
         ofs: u32,
         stride: u32,
     ) -> usize {
-        let n = self.accessors.len();
+        let n = self.data_accessors.len();
         let d = unsafe {
             std::mem::transmute::<&BufferData<'_, R>, &'buffers BufferData<'buffers, R>>(
                 &self.data[data],
             )
         };
-        let accessor = Box::new(BufferAccessor::new(d, num, et, ofs, stride));
-        self.accessors.push(accessor);
+        let accessor = Box::new(BufferDataAccessor::new(d, num, et, ofs, stride));
+        self.data_accessors.push(accessor);
         n
     }
 
-    //ap Accessor
-    /// Create a new [BufferAccessor] on a particular [ByteBuffer] instance that has already been pushed
-    pub fn accessor(&self, n: usize) -> &'buffers BufferAccessor<'buffers, R> {
-        assert!(n < self.accessors.len(), "Accessor index out of range");
-        let buffer = self.accessors[n].as_ref();
+    //ap indices
+    /// Get a buffer-lifetime reference to a buffer-lifetime [BufferIndexAccessor]
+    pub fn indices(&self, n: Option<usize>) -> Option<&'buffers BufferIndexAccessor<'buffers, R>> {
+        if let Some(n) = n {
+            let buffer = self.index_accessors[n].as_ref();
+            Some(unsafe {
+                std::mem::transmute::<
+                    &BufferIndexAccessor<'_, R>,
+                    &'buffers BufferIndexAccessor<'buffers, R>,
+                >(buffer)
+            })
+        } else {
+            None
+        }
+    }
+    //ap data_accessor
+    /// Get a buffer-lifetime reference to a buffer-lifetime [BufferDataAccessor]
+    pub fn data_accessor(&self, n: usize) -> &'buffers BufferDataAccessor<'buffers, R> {
+        assert!(
+            n < self.data_accessors.len(),
+            "Data accessor index out of range"
+        );
+        let buffer = self.data_accessors[n].as_ref();
         unsafe {
-            std::mem::transmute::<&BufferAccessor<'_, R>, &'buffers BufferAccessor<'buffers, R>>(
-                buffer,
-            )
+            std::mem::transmute::<
+                &BufferDataAccessor<'_, R>,
+                &'buffers BufferDataAccessor<'buffers, R>,
+            >(buffer)
         }
     }
 }
@@ -157,9 +206,21 @@ impl<'a, R: Renderable> ExampleVertices<'a, R> {
             .push_buffer_data(&self.buffers, buffer_n, 0, 0)
     }
 
-    //fp push_accessor
+    //fp push_index_accessor
     /// Create a new [BufferAccessor] on a particular [ByteBuffer] instance that has already been pushed
-    pub fn push_accessor(
+    pub fn push_index_accessor(
+        &mut self,
+        data: usize,
+        num: u32,
+        et: BufferElementType,
+        ofs: u32,
+    ) -> usize {
+        self.accessors.push_index_accessor(data, num, et, ofs)
+    }
+
+    //fp push_data_accessor
+    /// Create a new [BufferAccessor] on a particular [ByteBuffer] instance that has already been pushed
+    pub fn push_data_accessor(
         &mut self,
         data: usize,
         num: u32,
@@ -167,7 +228,8 @@ impl<'a, R: Renderable> ExampleVertices<'a, R> {
         ofs: u32,
         stride: u32,
     ) -> usize {
-        self.accessors.push_accessor(data, num, et, ofs, stride)
+        self.accessors
+            .push_data_accessor(data, num, et, ofs, stride)
     }
 
     //fp push_vertices
@@ -178,16 +240,16 @@ impl<'a, R: Renderable> ExampleVertices<'a, R> {
     /// This is safe as the BufferAccessor's are in the Vec for ExampleVertices
     pub fn push_vertices(
         &mut self,
-        indices: usize,
+        indices: Option<usize>,
         positions: usize,
         attrs: &[(VertexAttr, usize)],
     ) -> ShortIndex {
         let n = self.vertices.len();
-        let i = self.accessors.accessor(indices);
-        let v = self.accessors.accessor(positions);
+        let i = self.accessors.indices(indices);
+        let v = self.accessors.data_accessor(positions);
         let mut vertices = Vertices::new(i, v);
         for (attr, view_id) in attrs {
-            let v = self.accessors.accessor(*view_id);
+            let v = self.accessors.data_accessor(*view_id);
             vertices.add_attr(*attr, v);
         }
         self.vertices.push(vertices);

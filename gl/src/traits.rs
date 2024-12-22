@@ -1,6 +1,6 @@
 //a Imports
-#[cfg(feature="serde")]
-use serde::{Deserialize};
+#[cfg(feature = "serde")]
+use serde::Deserialize;
 
 use crate::{BufferView, UniformBuffer};
 use crate::{Mat4, TextureId, UniformId};
@@ -70,9 +70,6 @@ pub trait Gl:
         Accessor = BufferView<Self>,
     > + std::fmt::Debug
 {
-    // Lose Id?
-    type Id: Sized;
-    type Shader: GlShader;
     type Program: GlProgram;
     type Buffer: GlBuffer;
     type Vao: GlVao;
@@ -80,14 +77,13 @@ pub trait Gl:
     #[cfg(feature="serde")]
     type PipelineDesc<'a> : Deserialize<'a>;
     #[cfg(not(feature="serde"))]
-    type PipelineDesc;
+    type PipelineDesc<'a>;
 
     fn create_pipeline<F: Fn(&str) -> Result<String, String>>(&mut self,
                           read_src: &F,
                           pipeline_desc: Box<Self::PipelineDesc<'_>>,
-    ) -> Result<Self::Program, String>
-;
-    
+    ) -> Result<Self::Program, String>;
+
     //fp use_program
     /// Use the program
     fn use_program(&self, program: Option<&Self::Program>);

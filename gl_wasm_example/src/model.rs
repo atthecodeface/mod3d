@@ -58,7 +58,7 @@ impl<G: Gl> Base<G> {
     pub fn new(
         gl: &mut G,
         files: &HashMap<String, Vec<u8>>,
-        shader: Box<G::PipelineDesc>,
+        shader: Box<G::PipelineDesc<'_>>,
         filename: &str,
         node_names: &[&str],
     ) -> Result<Self, String> {

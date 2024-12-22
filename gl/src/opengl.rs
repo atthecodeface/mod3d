@@ -67,8 +67,8 @@ impl Model3DOpenGL {
 
 //ip Gl for Model3DOpenGL
 impl Gl for Model3DOpenGL {
-    type Id = u32;
-    type Shader = Shader;
+    // type Id = u32;
+    // type Shader = Shader;
     type Program = Program;
     type Buffer = buffer::Buffer;
     type Vao = vao::Vao;

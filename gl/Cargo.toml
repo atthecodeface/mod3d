@@ -20,6 +20,7 @@ serde = ["dep:serde"]
 geo-nd.workspace = true
 indent-display.workspace = true
 mod3d-base.workspace = true
+thiserror.workspace = true
 
 [dependencies.serde]
 optional = true

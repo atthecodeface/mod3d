@@ -110,5 +110,5 @@ pub fn new<G: Gl>(
     let mut obj = od.gen_object(&gltf, &vertices, &textures, &materials);
 
     obj.analyze();
-    obj.into_instantiable(render_context).map_err(|(_, e)| e)
+    obj.into_instantiable(render_context)
 }

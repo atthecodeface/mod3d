@@ -1,4 +1,4 @@
-use crate::{Gl, GlShaderType, TextureId, UniformId};
+use crate::{TextureId, UniformId};
 
 use std::collections::HashMap;
 

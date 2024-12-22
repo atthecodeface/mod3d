@@ -80,12 +80,10 @@ pub struct VertexDesc {
 /// A [VertexAttr] is a possible vertex attribute that can be used by
 /// a renderer; a vertex always has a position attribute, but
 /// additional attributes may or maynot be provided by a model
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum VertexAttr {
-    /// Indices
-    Indices,
     /// Position (3xf32) of the point
     Position,
     /// Normal (3xf32) at the point

@@ -75,8 +75,8 @@ impl std::ops::Deref for Model3DWebGL {
 
 //ip Gl for Model3DWebGL
 impl Gl for Model3DWebGL {
-    type Id = u32;
-    type Shader = Shader;
+    // type Id = u32;
+    // type Shader = Shader;
     type Program = Program;
     type Buffer = buffer::Buffer;
     type Vao = vao::Vao;

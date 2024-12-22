@@ -2,9 +2,9 @@
 use std::rc::Rc;
 
 use crate::{
-    AccessorClient, BufferAccessor, BufferClient, BufferData, BufferDescriptor, DescriptorClient,
-    Material, MaterialClient, Renderable, Texture, TextureClient, VertexAttr, Vertices,
-    VerticesClient,
+    AccessorClient, BufferClient, BufferData, BufferDataAccessor, BufferDescriptor,
+    BufferIndexAccessor, DescriptorClient, Material, MaterialClient, Renderable, Texture,
+    TextureClient, VertexAttr, Vertices, VerticesClient,
 };
 
 //a Buffer
@@ -68,7 +68,8 @@ impl VerticesClient for Id {}
 //ip Renderable for Id
 impl Renderable for Id {
     type Buffer = Buffer;
-    type Accessor = Buffer;
+    type DataAccessor = Buffer;
+    type IndexAccessor = Buffer;
     type Descriptor = Buffer;
     type Texture = Id;
     type Material = Id;
