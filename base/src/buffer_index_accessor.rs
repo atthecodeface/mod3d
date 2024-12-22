@@ -58,7 +58,7 @@ impl<'a, R: Renderable> BufferIndexAccessor<'a, R> {
         ele_type: BufferElementType,
         byte_offset: u32, // offset in bytes from start of data
     ) -> Self {
-        let rc_client = RefCell::new(R::IndxAccessor::default());
+        let rc_client = RefCell::new(R::IndexAccessor::default());
         Self {
             data,
             number_indices,

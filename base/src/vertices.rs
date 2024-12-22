@@ -46,7 +46,6 @@ where
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         writeln!(fmt, "Vertices:")?;
         writeln!(fmt, "  indices: {:?}", self.indices)?;
-        writeln!(fmt, "  position: {:?}", self.position)?;
         for (n, a) in &self.attrs {
             writeln!(fmt, "  {n:?}: {a:?}")?;
         }
