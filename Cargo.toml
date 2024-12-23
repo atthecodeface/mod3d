@@ -38,12 +38,12 @@ repository = "https://github.com/atthecodeface/model3d"
 
 # Note that workspace dependencies cannot be optional
 [workspace.dependencies]
-mod3d-base = { version = "0.1.0", path = "./base" }
-mod3d-shapes = {version = "0.0.1", path= "./shapes" }
-mod3d-gl = {version = "0.1.0", path= "./gl" }
-mod3d-gltf = {version = "0.1.0", path= "./gltf" }
-mod3d-gl-sdl-example = {version = "0.1.0", path= "./gl_sdl_example" }
-mod3d-gl-wasm-example = {version = "0.1.0", path= "./gl_wasm_example" }
+mod3d-base = { version = "0.2.0", path = "./base" }
+mod3d-shapes = {version = "0.0.2", path= "./shapes" }
+mod3d-gl = {version = "0.2.0", path= "./gl" }
+mod3d-gltf = {version = "0.2.0", path= "./gltf" }
+mod3d-gl-sdl-example = {version = "0.2.0", path= "./gl_sdl_example" }
+mod3d-gl-wasm-example = {version = "0.2.0", path= "./gl_wasm_example" }
 mod3d-gl-wgpu-example = {version = "0.1.0", path= "./gl_wgpu_example" }
 
 [workspace.dependencies.indent-display]
