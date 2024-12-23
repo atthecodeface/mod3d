@@ -176,8 +176,11 @@ pub fn new_of_glb<G: Gl>(
         .gen_byte_buffers(&mut gltf, &mod3d_gltf::buf_parse_fail, opt_buffer_0)
         .map_err(|e| format!("{e:?}"))?;
     let buffer_data = od.gen_buffer_data::<_, _, G>(&|x| &buffers[x]);
-    let buffer_accessors = od.gen_accessors(&gltf, &|x| &buffer_data[x]);
-    let vertices = od.gen_vertices(&gltf, &|x| &buffer_accessors[x]);
+    let (buffer_index_accessors, buffer_data_accessors) =
+        od.gen_accessors(&gltf, &|x| &buffer_data[x]);
+    let vertices = od.gen_vertices(&gltf, &|x| &buffer_index_accessors[x], &|x| {
+        &buffer_data_accessors[x]
+    });
 
     use image::io::Reader;
     use image::DynamicImage;
@@ -219,19 +222,22 @@ pub fn new_of_glb<G: Gl>(
     {
         let w = image.width() as usize;
         let h = image.height() as usize;
+        let bu8 = mod3d_base::BufferElementType::new_int(false, 8);
+        let bu16 = mod3d_base::BufferElementType::new_int(false, 16);
+        let bf16 = mod3d_base::BufferElementType::float16();
         let (elements_per_data, ele_type) = {
             match image.color() {
-                image::ColorType::L8 => (1, mod3d_base::BufferElementType::Int8),
-                image::ColorType::La8 => (2, mod3d_base::BufferElementType::Int8),
-                image::ColorType::Rgb8 => (3, mod3d_base::BufferElementType::Int8),
-                image::ColorType::Rgba8 => (4, mod3d_base::BufferElementType::Int8),
-                image::ColorType::L16 => (1, mod3d_base::BufferElementType::Int16),
-                image::ColorType::La16 => (2, mod3d_base::BufferElementType::Int16),
-                image::ColorType::Rgb16 => (3, mod3d_base::BufferElementType::Int16),
-                image::ColorType::Rgba16 => (4, mod3d_base::BufferElementType::Int16),
-                image::ColorType::Rgb32F => (3, mod3d_base::BufferElementType::Float16),
-                image::ColorType::Rgba32F => (4, mod3d_base::BufferElementType::Float16),
-                _ => (1, mod3d_base::BufferElementType::Int8),
+                image::ColorType::L8 => (1, bu8),
+                image::ColorType::La8 => (2, bu8),
+                image::ColorType::Rgb8 => (3, bu8),
+                image::ColorType::Rgba8 => (4, bu8),
+                image::ColorType::L16 => (1, bu16),
+                image::ColorType::La16 => (2, bu16),
+                image::ColorType::Rgb16 => (3, bu16),
+                image::ColorType::Rgba16 => (4, bu16),
+                image::ColorType::Rgb32F => (3, bf16),
+                image::ColorType::Rgba32F => (4, bf16),
+                _ => (1, bu8),
             }
         };
         let data = image.as_bytes();
@@ -242,5 +248,5 @@ pub fn new_of_glb<G: Gl>(
     let materials = od.gen_materials(&gltf);
     let mut obj = od.gen_object(&gltf, &vertices, &textures, &materials);
     obj.analyze();
-    obj.into_instantiable(render_context).map_err(|(_, e)| e)
+    Ok(obj.into_instantiable(render_context))
 }
