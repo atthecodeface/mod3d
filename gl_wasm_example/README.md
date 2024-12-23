@@ -3,7 +3,7 @@
 A library that builds a WASM WebGpu-based Gltf viewer, with shaders
 loaded at run-time.
 
-It is a very basic (and preety poorly structured, currently) example of using mod3d_base/gl/gtf.
+It is a very basic (and pretty poorly structured, currently) example of using mod3d_base/gl/gltf.
 
 It is built using the 'mk' script (since it needs the Wasm pack utility)
 

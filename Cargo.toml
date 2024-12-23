@@ -1,12 +1,11 @@
 [workspace]
 resolver = "2"
 members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "gl_wgpu_example", "shapes"]
-# members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "shapes"]
-# default-members = ["prelude"]
+default_members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "shapes"]
 
 [package]
 edition = "2021"
-version = "0.0.1"
+version = "0.0.2"
 name = "mod3d"
 description = "3D Models for Gl processing\n"
 homepage = "https://github.com/atthecodeface/model3d"
@@ -27,7 +26,7 @@ mod3d-shapes.workspace = true
 
 [workspace.package]
 edition = "2021"
-version = "0.0.1"
+version = "0.0.2"
 # name = "mod3d"
 description = "3D Models for Gl processing\n"
 homepage = "https://github.com/atthecodeface/model3d"
@@ -76,7 +75,7 @@ version = ">=1.0.61"
 
 [workspace.dependencies.geo-nd]
 version = ">=0.5.2"
-path = "../geo-nd-rs"
+#path = "../geo-nd-rs"
 
 [workspace.dependencies.clap]
 version = "4.5.2"
