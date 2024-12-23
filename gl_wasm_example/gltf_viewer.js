@@ -1,5 +1,5 @@
 //a Imports
-import init, {CanvasWebgl} from "./pkg/canvas_webgl.js";
+import init, {CanvasWebgl} from "./pkg/mod3d_gl_wasm_example.js";
 // import init, {WasmProject, WasmCip, WasmCameraDatabase, WasmCameraInstance, WasmNamedPoint, WasmNamedPointSet, WasmPointMappingSet, WasmRay} from "../pkg/image_calibrate_wasm.js";
 // import {Directory, FileSet} from "./files.js";
 // import {Log} from "./log.js";
