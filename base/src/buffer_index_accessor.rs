@@ -1,7 +1,8 @@
 //a Imports
 use std::cell::RefCell;
+use std::ops::DerefMut;
 
-use crate::{BufferData, BufferElementType, Renderable, VertexAttr};
+use crate::{BufferData, BufferElementType, Renderable};
 
 //a BufferIndexAccessor
 //tp BufferIndexAccessor
@@ -71,7 +72,6 @@ impl<'a, R: Renderable> BufferIndexAccessor<'a, R> {
     //mp create_client
     /// Create the render buffer required by the BufferIndexAccessor
     pub fn create_client(&self, renderable: &mut R) {
-        use std::ops::DerefMut;
         renderable.init_index_accessor_client(self.rc_client.borrow_mut().deref_mut(), self);
     }
 

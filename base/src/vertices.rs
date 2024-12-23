@@ -27,6 +27,8 @@ use crate::{Renderable, VertexAttr};
 /// primitives; rendering the instance with a shader will require
 /// enabling the [Vertices] client for that shader, setting
 /// appropriate render options (uniforms in OpenGL)
+///
+/// FIXME - change to using VertexDesc instead of VeretxAttr?
 #[derive(Debug)]
 pub struct Vertices<'vertices, R: Renderable + ?Sized> {
     /// Indices related to primitives that use these vertices; if none
@@ -120,7 +122,7 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
     //mp create_client
     /// Create the render buffer required by the BufferAccessor
     pub fn create_client(&self, renderer: &mut R) {
-        self.indices.create_client(renderer);
+        self.indices.map(|i| i.create_client(renderer));
         for (attr, view) in self.iter_attrs() {
             view.create_client(*attr, renderer);
         }

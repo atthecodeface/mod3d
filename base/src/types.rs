@@ -26,6 +26,8 @@ pub type Quat = [f32; 4];
 //a Buffer
 //tp BufferElementType
 /// The type of an element in a buffer
+///
+/// This deliberately does not implement Default
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
@@ -50,6 +52,44 @@ pub enum BufferElementType {
 
 //ip BufferElementType
 impl BufferElementType {
+    /// Create a 16-bit float type
+    pub const fn float16() -> Self {
+        Self::Float16
+    }
+    /// Create a 32-bit float type
+    pub const fn float32() -> Self {
+        Self::Float32
+    }
+    /// Create a signed/unsigned int type
+    pub const fn new_int(signed: bool, bits: usize) -> Self {
+        match bits {
+            8 => {
+                if signed {
+                    Self::SInt8
+                } else {
+                    Self::UInt8
+                }
+            }
+            16 => {
+                if signed {
+                    Self::SInt16
+                } else {
+                    Self::UInt16
+                }
+            }
+            32 => {
+                if signed {
+                    Self::SInt32
+                } else {
+                    Self::UInt32
+                }
+            }
+            _ => {
+                panic!("An int value must be 8, 16 or 32 bits");
+            }
+        }
+    }
+
     /// Get the length in bytes of the element type
     pub fn byte_length(self) -> usize {
         use BufferElementType::*;
@@ -67,6 +107,7 @@ impl BufferElementType {
 }
 
 //tp VertexDesc
+/// A descriptor of the contents of one aspect of data for a Vertex
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct VertexDesc {

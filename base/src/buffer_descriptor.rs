@@ -1,11 +1,11 @@
 //a Imports
 use std::cell::RefCell;
 
-use crate::{BufferData, BufferElementType, Renderable, VertexAttr, VertexDesc};
+use crate::{BufferData, Renderable, VertexDesc};
 
 //a BufferDescriptor
 //tp BufferDescriptor
-/// A desccriptor of a subset of a `BufferData`, used for vertex attributes;
+/// A descriptor of a subset of a `BufferData`, used for vertex attributes;
 /// hence for use in a vertex attribute pointer.
 ///
 /// A `BufferDescriptor` is used for a single attribute of a set of data, such as

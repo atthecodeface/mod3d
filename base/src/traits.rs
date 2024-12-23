@@ -92,6 +92,12 @@ pub trait Renderable: Sized {
     /// and the associated [BufferAccessor]s of attributes supported by a
     /// particular pipeline within the renderer
     type Vertices: VerticesClient;
+    /// Initialize a buffer descriptor client - it will have been created using default()
+    fn init_buffer_desc_client(
+        &mut self,
+        client: &mut Self::Descriptor,
+        buffer_desc: &BufferDescriptor<Self>,
+    );
     // type Instantiable : ;
     /// Initialize a buffer data client - it will have been created using default()
     fn init_buffer_data_client(
@@ -99,18 +105,11 @@ pub trait Renderable: Sized {
         client: &mut Self::Buffer,
         buffer_data: &BufferData<Self>,
     );
-    /// Initialize a buffer data client - it will have been created using default()
-    fn init_buffer_desc_client(
-        &mut self,
-        client: &mut Self::Descriptor,
-        buffer_desc: &BufferDescriptor<Self>,
-    );
     /// Initialize the client of an index accessor of a buffer data
     fn init_index_accessor_client(
         &mut self,
-        client: &mut Self::DataAccessor,
+        client: &mut Self::IndexAccessor,
         buffer_view: &BufferIndexAccessor<Self>,
-        attr: VertexAttr,
     );
     /// Initialize the client of a data accessor of a buffer data
     fn init_buffer_view_client(

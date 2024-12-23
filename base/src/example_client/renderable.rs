@@ -74,9 +74,13 @@ impl Renderable for Id {
     type Texture = Id;
     type Material = Id;
     type Vertices = Id;
-    fn init_buffer_data_client(&mut self, _buffer: &mut Buffer, _data: &BufferData<Self>) {
-        // No need to do anything; the
+    fn init_index_accessor_client(
+        &mut self,
+        _client: &mut Self::DataAccessor,
+        _buffer_view: &BufferIndexAccessor<Self>,
+    ) {
     }
+    fn init_buffer_data_client(&mut self, _buffer: &mut Buffer, _data: &BufferData<Self>) {}
     fn init_buffer_desc_client(
         &mut self,
         client: &mut Self::Descriptor,
@@ -87,8 +91,8 @@ impl Renderable for Id {
     }
     fn init_buffer_view_client(
         &mut self,
-        client: &mut Self::Accessor,
-        buffer_view: &BufferAccessor<Self>,
+        client: &mut Buffer,
+        buffer_view: &BufferDataAccessor<Self>,
         _attr: VertexAttr,
     ) {
         buffer_view.data.create_client(self);

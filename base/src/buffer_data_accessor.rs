@@ -10,6 +10,8 @@ use crate::{BufferData, BufferElementType, Renderable, VertexAttr};
 ///
 /// A `BufferDataAccessor` is used for a single attribute of a set of data, such as
 /// Position or Normal.
+///
+/// FIXME - change to using BufferDescriptor?
 pub struct BufferDataAccessor<'a, R: Renderable + ?Sized> {
     /// The `BufferData` that contains the actual vertex attribute data
     pub data: &'a BufferData<'a, R>,
