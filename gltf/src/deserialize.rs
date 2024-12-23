@@ -83,12 +83,12 @@ where
     let c: usize = Deserialize::deserialize(de)?;
     use mod3d_base::BufferElementType::*;
     Ok(match c {
-        5120 => Int8,
-        5121 => Int8, // unsigned
-        5122 => Int16,
-        5123 => Int16, // unsigned
-        5124 => Int32,
-        5125 => Int32, // unsigned
+        5120 => SInt8,
+        5121 => UInt8,
+        5122 => SInt16,
+        5123 => UInt16,
+        5124 => SInt32,
+        5125 => UInt32,
         5126 => Float32,
         _ => {
             return Err(serde::de::Error::custom(format!(
@@ -101,7 +101,7 @@ where
 //fi ele_type_s32
 /// The default element type if not provided bya Gltf JSON
 pub fn ele_type_s32() -> mod3d_base::BufferElementType {
-    mod3d_base::BufferElementType::Int32
+    mod3d_base::BufferElementType::SInt32
 }
 
 //fi type_to_num

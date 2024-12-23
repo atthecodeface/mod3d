@@ -109,12 +109,12 @@ where
     use mod3d_base::BufferElementType::*;
     let c: u32 = {
         match *ele_type {
-            Int8 => 5120,
-            // Int8 => 5121, unsigned
-            Int16 => 5122,
-            // Int16 => 5123, // unsigned
-            // Int32 => 5124, // signed
-            Int32 => 5125, // unsigned
+            SInt8 => 5120,
+            UInt8 => 5121,
+            SInt16 => 5122,
+            UInt16 => 5123,
+            SInt32 => 5124,
+            UInt32 => 5125,
             Float32 => 5126,
             _ => {
                 return Err(serde::ser::Error::custom(format!(

@@ -1,6 +1,6 @@
 //a Imports
 use mod3d_base::hierarchy::NodeEnumOp;
-use mod3d_base::{BufferAccessor, BufferData, ByteBuffer, Renderable};
+use mod3d_base::{BufferData, BufferDataAccessor, BufferIndexAccessor, ByteBuffer, Renderable};
 
 use crate::try_buf_parse_base64;
 use crate::Gltf;
@@ -27,7 +27,7 @@ use crate::{
 ///
 /// Once derived the mod3d_base::Buffer required must be generated;
 /// then the mod3d_base::BufferData; then the
-/// mod3d_base::BufferAccessor. These generate Vec of the relevant
+/// mod3d_base::BufferDataAccessor. These generate Vec of the relevant
 /// types, which must remain live until any object is made into an
 /// Instantiable; the [ObjectData] maintains indiices into these Vec
 /// for the Gltf buffers (etc) that are used by the required objects.
@@ -73,8 +73,10 @@ pub struct ObjectData {
     /// json_value. which maps a Json buffer to
     /// the range of it that is used
     buffer_usage: Vec<BufferUsage>,
-    /// For each accessor, the index into the Vec<BufferAccessor> (if used and it
+    /// For each accessor, the index into the Vec<BufferDataAccessor> (if used and it
     /// worked); same size as gltf.buffer_views
+    ///
+    /// FIXME - should this be data_accessors? What about indices?
     accessors: Vec<Option<ODAccIndex>>,
     /// For all meshes, if used Some(array of possible Vertices index for each
     /// primitive); same size as gltf.meshes
@@ -464,14 +466,13 @@ impl ObjectData {
         Ok(result)
     }
 
-    //mi make_accessor
-    fn make_accessor<'buffers, F, R>(
+    //mi make_index_accessor
+    fn make_index_accessor<'buffers, F, R>(
         &self,
         gltf: &Gltf,
         buffer_data: &F,
-        is_index: bool,
         acc: AccessorIndex,
-    ) -> BufferAccessor<'buffers, R>
+    ) -> BufferIndexAccessor<'buffers, R>
     where
         F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
         R: Renderable + ?Sized,
@@ -480,25 +481,36 @@ impl ObjectData {
         let bv = ba.buffer_view().unwrap();
         let bv = &gltf[bv];
         let buffer = &self[bv.buffer()];
-        let data = {
-            if is_index {
-                buffer.index_bd()
-            } else {
-                buffer.vertex_bd()
-            }
-        };
+        let data = buffer.index_bd();
+        let data = buffer_data(data.as_usize());
+        let byte_offset = ba.byte_offset() + bv.byte_offset() - (data.byte_offset as usize);
+        let count = ba.count();
+        eprintln!("make_index_accessor ba:? {data:?}, {count}, {byte_offset}");
+        BufferIndexAccessor::new(data, count as u32, ba.component_type(), byte_offset as u32)
+    }
+
+    //mi make_data_accessor
+    fn make_data_accessor<'buffers, F, R>(
+        &self,
+        gltf: &Gltf,
+        buffer_data: &F,
+        acc: AccessorIndex,
+    ) -> BufferDataAccessor<'buffers, R>
+    where
+        F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
+        R: Renderable + ?Sized,
+    {
+        let ba = &gltf[acc];
+        let bv = ba.buffer_view().unwrap();
+        let bv = &gltf[bv];
+        let buffer = &self[bv.buffer()];
+        let data = buffer.vertex_bd();
         let data = buffer_data(data.as_usize());
         let byte_offset = ba.byte_offset() + bv.byte_offset() - (data.byte_offset as usize);
         let byte_stride = bv.byte_stride(ba.ele_byte_size());
-        let count = {
-            if is_index {
-                ba.count()
-            } else {
-                ba.elements_per_data()
-            }
-        };
-        eprintln!("make_accessor ba:? {data:?}, {count}, {byte_offset}, {byte_stride}");
-        BufferAccessor::new(
+        let count = ba.elements_per_data();
+        eprintln!("make_data_accessor ba:? {data:?}, {count}, {byte_offset}, {byte_stride}");
+        BufferDataAccessor::new(
             data,
             count as u32,
             ba.component_type(),
@@ -517,12 +529,16 @@ impl ObjectData {
         &mut self,
         gltf: &Gltf,
         buffer_data: &F,
-    ) -> Vec<BufferAccessor<'buffers, R>>
+    ) -> (
+        Vec<BufferIndexAccessor<'buffers, R>>,
+        Vec<BufferDataAccessor<'buffers, R>>,
+    )
     where
         F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
         R: Renderable + ?Sized,
     {
-        let mut buffer_accessors = vec![];
+        let mut buffer_index_accessors = vec![];
+        let mut buffer_data_accessors = vec![];
         for i in 0..self.meshes.len() {
             let mi: MeshIndex = i.into();
             if self[mi].is_none() {
@@ -534,33 +550,35 @@ impl ObjectData {
                     if self[ia].is_some() {
                         continue;
                     }
-                    let b = self.make_accessor(gltf, buffer_data, true, ia);
-                    self[ia] = Some(buffer_accessors.len().into());
-                    buffer_accessors.push(b);
+                    let b = self.make_index_accessor(gltf, buffer_data, ia);
+                    self[ia] = Some(buffer_index_accessors.len().into());
+                    buffer_index_accessors.push(b);
                 }
                 for (_, va) in p.attributes() {
                     if self[*va].is_some() {
                         continue;
                     }
-                    let b = self.make_accessor(gltf, buffer_data, false, *va);
-                    self[*va] = Some(buffer_accessors.len().into());
-                    buffer_accessors.push(b);
+                    let b = self.make_data_accessor(gltf, buffer_data, *va);
+                    self[*va] = Some(buffer_data_accessors.len().into());
+                    buffer_data_accessors.push(b);
                 }
             }
         }
-        buffer_accessors
+        (buffer_index_accessors, buffer_data_accessors)
     }
 
     //mp gen_vertices
     /// Generate vertices from the objects in the Gltf, given buffer accessors
     /// that have been generated already
-    pub fn gen_vertices<'vertices, F, R>(
+    pub fn gen_vertices<'vertices, F, G, R>(
         &mut self,
         gltf: &Gltf,
-        buffer_accessor: &F,
+        buffer_index_accessor: &F,
+        buffer_data_accessor: &G,
     ) -> Vec<mod3d_base::Vertices<'vertices, R>>
     where
-        F: Fn(usize) -> &'vertices BufferAccessor<'vertices, R>,
+        F: Fn(usize) -> &'vertices BufferIndexAccessor<'vertices, R>,
+        G: Fn(usize) -> &'vertices BufferDataAccessor<'vertices, R>,
         R: Renderable + ?Sized,
     {
         let mut vertices = vec![];
@@ -590,15 +608,15 @@ impl ObjectData {
                 let Some(pa) = self[*pa] else {
                     continue;
                 };
-                let indices = buffer_accessor(ia.as_usize());
-                let positions = buffer_accessor(pa.as_usize());
-                let mut v = mod3d_base::Vertices::new(indices, positions);
+                let indices = buffer_index_accessor(ia.as_usize());
+                let positions = buffer_data_accessor(pa.as_usize());
+                let mut v = mod3d_base::Vertices::new(Some(indices), positions);
                 for (va, vpa) in p.attributes() {
                     if *va == mod3d_base::VertexAttr::Position {
                         continue;
                     }
                     if let Some(vpa) = self[*vpa] {
-                        v.add_attr(*va, buffer_accessor(vpa.as_usize()));
+                        v.add_attr(*va, buffer_data_accessor(vpa.as_usize()));
                     }
                 }
                 let primitve_v = vertices.len();
