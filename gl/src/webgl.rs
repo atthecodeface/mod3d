@@ -289,7 +289,7 @@ impl mod3d_base::Renderable for Model3DWebGL {
         _client: &mut Self::Descriptor,
         _buffer_desc: &mod3d_base::BufferDescriptor<Self>,
     ) {
-        todo!();
+        // todo!();
     }
 
     //mp init_buffer_data_client
@@ -310,10 +310,10 @@ impl mod3d_base::Renderable for Model3DWebGL {
     /// Initialize the client of an index accessor of a buffer data
     fn init_index_accessor_client(
         &mut self,
-        _client: &mut Self::IndexAccessor,
-        _buffer_view: &mod3d_base::BufferIndexAccessor<Self>,
+        client: &mut Self::IndexAccessor,
+        buffer_view: &mod3d_base::BufferIndexAccessor<Self>,
     ) {
-        todo!();
+        client.init_index_accessor_client(buffer_view, self);
     }
 
     //mp init_buffer_view_client
