@@ -258,7 +258,7 @@ impl MeshSet {
                 ib,
                 (pr.indices.start.index() as u32) * (std::mem::size_of::<u32>() as u32),
                 (pr.indices.end - pr.indices.start).index() as u32,
-                mod3d_base::BufferElementType::Int32,
+                mod3d_base::BufferElementType::new_int(false,32),
                 1,
             );
             let p = m.add_primitive(pr.primitive_type, Some(ia), None);
