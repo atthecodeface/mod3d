@@ -248,6 +248,7 @@ class Thing {
         this.animating = false;
         this.filename = "ToyCar.glb";
         this.filename = "DamagedHelmet.glb";
+        this.filename = "/glb/"+this.filename;
         this.node_names = ["0"];
 	this.webgl = webgl;
 	webgl.add_file("sdp.json", new TextEncoder().encode(SDP));
