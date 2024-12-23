@@ -44,15 +44,21 @@ where
 {
     //mp create
     /// Create based on [mod3d_rs::Vertices]
+    ///
+    /// Todo: remove unwrap() in position; make it do nothing if there is no position attr
+    ///
+    /// Todo: support indics being an option
     pub fn create(vertices: &mod3d_base::Vertices<G>, _renderer: &mut G) -> Self {
         let indices = vertices
             .borrow_indices()
+            .unwrap()
             .borrow_client()
             .as_index_buffer()
             .clone()
             .into();
         let position = vertices
-            .borrow_position()
+            .borrow_attr(mod3d_base::VertexAttr::Position)
+            .unwrap()
             .borrow_client()
             .as_vertex_buffer()
             .clone()

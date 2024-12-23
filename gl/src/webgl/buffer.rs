@@ -93,7 +93,7 @@ impl Buffer {
     /// Create the OpenGL ELEMENT_ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
     pub fn of_indices(
         &mut self,
-        view: &mod3d_base::BufferAccessor<Model3DWebGL>,
+        view: &mod3d_base::BufferIndexAccessor<Model3DWebGL>,
         render_context: &Model3DWebGL,
     ) {
         assert!(self.is_none());
@@ -151,9 +151,12 @@ impl Buffer {
             match ele_type {
                 Float32 => WebGl2RenderingContext::FLOAT,
                 Float16 => WebGl2RenderingContext::HALF_FLOAT,
-                Int8 => WebGl2RenderingContext::BYTE,
-                Int16 => WebGl2RenderingContext::SHORT,
-                Int32 => WebGl2RenderingContext::INT,
+                UInt8 => WebGl2RenderingContext::BYTE,
+                SInt8 => WebGl2RenderingContext::BYTE,
+                UInt16 => WebGl2RenderingContext::SHORT,
+                SInt16 => WebGl2RenderingContext::SHORT,
+                UInt32 => WebGl2RenderingContext::INT,
+                SInt32 => WebGl2RenderingContext::INT,
             }
         };
         crate::console_log!("bind_to_vao_attr");

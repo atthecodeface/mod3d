@@ -109,7 +109,7 @@ impl Gl for Model3DWebGL {
     fn init_buffer_of_indices(
         &mut self,
         buffer: &mut <Self as Gl>::Buffer,
-        view: &mod3d_base::BufferAccessor<Self>,
+        view: &mod3d_base::BufferIndexAccessor<Self>,
     ) {
         buffer.of_indices(view, self);
     }
@@ -275,10 +275,22 @@ impl Gl for Model3DWebGL {
 //ip mod3d_base::Renderable for Model3DWebGL
 impl mod3d_base::Renderable for Model3DWebGL {
     type Buffer = buffer::Buffer;
-    type Accessor = crate::BufferView<Self>;
+    type IndexAccessor = crate::BufferView<Self>;
+    type DataAccessor = crate::BufferView<Self>;
     type Texture = texture::Texture;
     type Material = crate::Material;
     type Vertices = crate::Vertices<Self>;
+    type Descriptor = crate::Descriptor;
+
+    //mp init_buffer_desc_client
+    /// Initialize a buffer descriptor client - it will have been created using default()
+    fn init_buffer_desc_client(
+        &mut self,
+        _client: &mut Self::Descriptor,
+        _buffer_desc: &mod3d_base::BufferDescriptor<Self>,
+    ) {
+        todo!();
+    }
 
     //mp init_buffer_data_client
     /// Initialize a BufferData client
@@ -295,12 +307,21 @@ impl mod3d_base::Renderable for Model3DWebGL {
         }
     }
 
+    /// Initialize the client of an index accessor of a buffer data
+    fn init_index_accessor_client(
+        &mut self,
+        _client: &mut Self::IndexAccessor,
+        _buffer_view: &mod3d_base::BufferIndexAccessor<Self>,
+    ) {
+        todo!();
+    }
+
     //mp init_buffer_view_client
     /// Initialize a buffer view client
     fn init_buffer_view_client(
         &mut self,
-        client: &mut Self::Accessor,
-        buffer_view: &mod3d_base::BufferAccessor<Self>,
+        client: &mut Self::DataAccessor,
+        buffer_view: &mod3d_base::BufferDataAccessor<Self>,
         attr: mod3d_base::VertexAttr,
     ) {
         client.init_buffer_view_client(buffer_view, attr, self);

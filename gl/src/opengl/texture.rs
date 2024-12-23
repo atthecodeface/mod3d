@@ -67,8 +67,8 @@ impl Texture {
         };
         let data_type = {
             match data_type.1 {
-                mod3d_base::BufferElementType::Int8 => gl::UNSIGNED_BYTE,
-                mod3d_base::BufferElementType::Int16 => gl::UNSIGNED_SHORT,
+                mod3d_base::BufferElementType::UInt8 => gl::UNSIGNED_BYTE,
+                mod3d_base::BufferElementType::UInt16 => gl::UNSIGNED_SHORT,
                 mod3d_base::BufferElementType::Float16 => gl::SHORT,
                 mod3d_base::BufferElementType::Float32 => gl::FLOAT,
                 _ => gl::UNSIGNED_BYTE,

@@ -38,6 +38,15 @@ pub use vertices::Vertices;
 mod shader_instantiable;
 pub use shader_instantiable::{ShaderInstantiable, ShaderMaterialBaseData};
 
+#[derive(Debug, Default, Clone)]
+pub struct Descriptor(());
+impl std::fmt::Display for Descriptor {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        std::fmt::Debug::fmt(self, fmt)
+    }
+}
+impl mod3d_base::DescriptorClient for Descriptor {}
+
 //a Model3DWebGL
 #[cfg(feature = "webgl")]
 mod webgl;

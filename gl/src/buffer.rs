@@ -1,7 +1,7 @@
 //a Imports
 use std::marker::PhantomData;
 
-use mod3d_base::{BufferAccessor, BufferElementType, VertexAttr};
+use mod3d_base::{BufferDataAccessor, BufferElementType, BufferIndexAccessor, VertexAttr};
 
 use crate::{Gl, GlProgram};
 
@@ -23,8 +23,7 @@ where
 {
     /// Ref-counted buffer
     gl_buffer: <G as Gl>::Buffer,
-    /// For attributes: number of elements per vertex (1 to 4, or 4, 9 or 16)
-    /// For indices: number of indices in the buffer
+    /// Number of elements per vertex (1 to 4, or 4, 9 or 16)
     pub elements_per_data: u32,
     /// The type of each element
     pub ele_type: BufferElementType,
@@ -48,7 +47,7 @@ where
 
     //mp of_view
     /// Create the OpenGL ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
-    fn of_view(&mut self, view: &BufferAccessor<G>, render_context: &mut G) {
+    fn of_view(&mut self, view: &BufferDataAccessor<G>, render_context: &mut G) {
         view.data.create_client(render_context);
         self.elements_per_data = view.elements_per_data;
         self.ele_type = view.ele_type;
@@ -85,7 +84,7 @@ where
     fn default() -> Self {
         let gl_buffer = <G as Gl>::Buffer::default();
         let elements_per_data = 0;
-        let ele_type = BufferElementType::Float32;
+        let ele_type = BufferElementType::float32();
         let byte_offset = 0;
         let stride = 0;
         Self {
@@ -164,7 +163,7 @@ where
     fn default() -> Self {
         let gl_buffer = <G as Gl>::Buffer::default();
         let count = 0;
-        let ele_type = BufferElementType::Int8;
+        let ele_type = BufferElementType::UInt8;
         Self {
             gl_buffer,
             count,
@@ -197,14 +196,14 @@ where
 {
     //mp of_view
     /// Create the OpenGL ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
-    fn of_view(view: &BufferAccessor<G>, render_context: &mut G) -> Self {
+    fn of_view(view: &BufferIndexAccessor<G>, render_context: &mut G) -> Self {
         let mut gl_buffer = <G as Gl>::Buffer::default();
         render_context.init_buffer_of_indices(&mut gl_buffer, view);
-        let count = view.elements_per_data;
+        let count = view.number_indices;
         let ele_type = view.ele_type;
         println!(
             "Create indices buffer {} of view {:?}#{}",
-            gl_buffer, view.ele_type, view.elements_per_data
+            gl_buffer, ele_type, count
         );
         Self {
             gl_buffer,
@@ -300,22 +299,30 @@ where
             _ => panic!("Attempt to borrow an IndexBuffer as an VertexBuffer"),
         }
     }
+
+    //mp init_index_accessor_client
+    /// Create the OpenGL ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
+    pub fn init_index_accessor_client(
+        &mut self,
+        buffer_view: &BufferIndexAccessor<G>,
+        renderer: &mut G,
+    ) {
+        let index_buffer = IndexBuffer::of_view(buffer_view, renderer);
+        *self = BufferView::IndexBuffer(index_buffer);
+    }
+
+    //mp init_buffer_view_client
     /// Create the OpenGL ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
     pub fn init_buffer_view_client(
         &mut self,
-        view: &BufferAccessor<G>,
+        buffer_view: &BufferDataAccessor<G>,
         attr: VertexAttr,
         renderer: &mut G,
     ) {
-        if attr == VertexAttr::Indices {
-            let index_buffer = IndexBuffer::of_view(view, renderer);
-            *self = BufferView::IndexBuffer(index_buffer);
-        } else {
-            match self {
-                BufferView::IndexBuffer(_) => panic!("Vertex buffer is already an index buffer"),
-                BufferView::VertexBuffer(vb) => {
-                    vb.of_view(view, renderer);
-                }
+        match self {
+            BufferView::IndexBuffer(_) => panic!("Vertex buffer is already an index buffer"),
+            BufferView::VertexBuffer(vb) => {
+                vb.of_view(buffer_view, renderer);
             }
         }
     }

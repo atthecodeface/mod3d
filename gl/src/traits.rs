@@ -67,7 +67,8 @@ pub trait Gl:
         Vertices = Vertices<Self>,
         Texture = <Self as Gl>::Texture,
         Material = Material,  // <Self>,
-        Accessor = BufferView<Self>,
+        IndexAccessor = BufferView<Self>,
+        DataAccessor = BufferView<Self>,
     > + std::fmt::Debug
 {
     type Program: GlProgram;
@@ -93,7 +94,7 @@ pub trait Gl:
     fn init_buffer_of_indices(
         &mut self,
         buffer: &mut <Self as Gl>::Buffer,
-        view: &mod3d_base::BufferAccessor<Self>,
+        view: &mod3d_base::BufferIndexAccessor<Self>,
     );
 
     //mp uniform_buffer_create

@@ -42,8 +42,8 @@ impl Vao {
         let gl_vao = render_context.create_vertex_array().unwrap().into();
         let index_type = {
             match indices.ele_type {
-                mod3d_base::BufferElementType::Int16 => WebGl2RenderingContext::UNSIGNED_SHORT,
-                mod3d_base::BufferElementType::Int32 => WebGl2RenderingContext::UNSIGNED_INT,
+                mod3d_base::BufferElementType::UInt16 => WebGl2RenderingContext::UNSIGNED_SHORT,
+                mod3d_base::BufferElementType::UInt32 => WebGl2RenderingContext::UNSIGNED_INT,
                 _ => WebGl2RenderingContext::UNSIGNED_INT,
             }
         };

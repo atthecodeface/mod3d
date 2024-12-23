@@ -77,19 +77,10 @@ impl Buffer {
 
     //mp of_indices
     /// Create the OpenGL ELEMENT_ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
-    pub fn of_indices(&mut self, view: &mod3d_base::BufferAccessor<Model3DOpenGL>) {
+    pub fn of_indices(&mut self, view: &mod3d_base::BufferIndexAccessor<Model3DOpenGL>) {
         assert!(self.is_none());
         let mut gl: gl::types::GLuint = 0;
-        let ele_size = {
-            use BufferElementType::*;
-            match view.ele_type {
-                Int8 => 1,
-                Int16 => 2,
-                Int32 => 4,
-                _ => panic!("Indices BufferAccessor must have an int element type"),
-            }
-        };
-        let byte_length = ele_size * view.elements_per_data;
+        let byte_length = view.number_indices as usize * view.ele_type.byte_length();
         unsafe {
             // stops the indices messing up other VAO
             gl::BindVertexArray(0);
@@ -123,9 +114,12 @@ impl Buffer {
             match ele_type {
                 Float32 => gl::FLOAT,
                 Float16 => gl::HALF_FLOAT,
-                Int8 => gl::BYTE,
-                Int16 => gl::SHORT,
-                Int32 => gl::INT,
+                SInt8 => gl::BYTE,
+                UInt8 => gl::BYTE,
+                SInt16 => gl::SHORT,
+                UInt16 => gl::SHORT,
+                SInt32 => gl::INT,
+                UInt32 => gl::INT,
             }
         };
         unsafe {
