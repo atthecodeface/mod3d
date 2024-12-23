@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "gl_wgpu_example", "shapes"]
+members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "shapes"]
+# members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "gl_wgpu_example", "shapes"]
 default_members = [ "base", "gl", "gltf", "gl_sdl_example", "gl_wasm_example", "shapes"]
 
 [package]
@@ -21,7 +22,7 @@ mod3d-gl.workspace = true
 mod3d-gltf.workspace = true
 mod3d-gl-sdl-example.workspace = true
 mod3d-gl-wasm-example.workspace = true
-mod3d-gl-wgpu-example.workspace = true
+# mod3d-gl-wgpu-example.workspace = true
 mod3d-shapes.workspace = true
 
 [workspace.package]
@@ -44,7 +45,7 @@ mod3d-gl = {version = "0.2.0", path= "./gl" }
 mod3d-gltf = {version = "0.2.0", path= "./gltf" }
 mod3d-gl-sdl-example = {version = "0.2.0", path= "./gl_sdl_example" }
 mod3d-gl-wasm-example = {version = "0.2.0", path= "./gl_wasm_example" }
-mod3d-gl-wgpu-example = {version = "0.1.0", path= "./gl_wgpu_example" }
+# mod3d-gl-wgpu-example = {version = "0.1.0", path= "./gl_wgpu_example" }
 
 [workspace.dependencies.indent-display]
 version = ">=0.1.1"
