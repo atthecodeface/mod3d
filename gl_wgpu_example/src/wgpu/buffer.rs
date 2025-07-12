@@ -22,7 +22,7 @@ use std::rc::Rc;
 #[derive(Debug, Clone)]
 pub struct Buffer {
     /// The WGpu Buffer
-    gl: Rc<Option<wpgu::Buffer>>,
+    gl: Rc<Option<wgpu::Buffer>>,
 }
 
 //ip Default for Buffer
