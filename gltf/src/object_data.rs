@@ -713,7 +713,7 @@ impl ObjectData {
                         continue;
                     }
                     if let Some(vpa) = self[*vpa] {
-                        v.add_attr(*va, buffer_data_accessor(vpa.as_usize()));
+                        v.add_attr(buffer_data_accessor(vpa.as_usize()));
                     }
                 }
                 let primitve_v = vertices.len();

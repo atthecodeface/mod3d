@@ -35,8 +35,10 @@ pub struct Vertices<'vertices, R: Renderable> {
     /// Indices related to primitives that use these vertices; if none
     /// then a draw call is not indexed but uses a range of elements
     indices: Option<&'vertices BufferIndexAccessor<'vertices, R>>,
+
     /// Attributes of the vertices, which must include position, sorted by VertexAttr
-    attrs: Vec<(VertexAttr, &'vertices BufferDataAccessor<'vertices, R>)>,
+    attrs: Vec<&'vertices BufferDataAccessor<'vertices, R>>,
+
     /// Client handle for this set of Vertices, updated when 'create_client' is invoked
     rc_client: RefCell<R::Vertices>,
 }
@@ -49,8 +51,8 @@ where
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         writeln!(fmt, "Vertices:")?;
         writeln!(fmt, "  indices: {:?}", self.indices)?;
-        for (n, a) in &self.attrs {
-            writeln!(fmt, "  {n:?}: {a:?}")?;
+        for a in &self.attrs {
+            writeln!(fmt, "  {a:?}")?;
         }
         Ok(())
     }
@@ -64,7 +66,7 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
         indices: Option<&'vertices BufferIndexAccessor<'vertices, R>>,
         position: &'vertices BufferDataAccessor<'vertices, R>,
     ) -> Self {
-        let attrs = vec![(VertexAttr::Position, position)];
+        let attrs = vec![position];
         let rc_client = RefCell::new(R::Vertices::default());
         Self {
             indices,
@@ -79,18 +81,15 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
     /// On creation the [Vertices] will have views for indices and
     /// positions; this provides a means to add views for things such
     /// as normal, tex coords, etc
-    pub fn add_attr(
-        &mut self,
-        attr: VertexAttr,
-        accessor: &'vertices BufferDataAccessor<'vertices, R>,
-    ) {
-        match self.attrs.binary_search_by(|(a, _)| a.cmp(&attr)) {
-            Ok(index) => {
-                self.attrs[index] = (attr, accessor);
-            }
-            Err(index) => {
-                self.attrs.insert(index, (attr, accessor));
-            }
+    pub fn add_attr(&mut self, accessor: &'vertices BufferDataAccessor<'vertices, R>) {
+        if let Some(p) = self
+            .attrs
+            .iter()
+            .position(|a| a.vertex_attr() == accessor.vertex_attr())
+        {
+            self.attrs[p] = accessor;
+        } else {
+            self.attrs.push(accessor);
         }
     }
 
@@ -106,17 +105,15 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
         &'a self,
         attr: VertexAttr,
     ) -> Option<&'a BufferDataAccessor<'vertices, R>> {
-        for i in 0..self.attrs.len() {
-            if self.attrs[i].0 == attr {
-                return Some(self.attrs[i].1);
-            }
-        }
-        None
+        self.attrs
+            .iter()
+            .position(|a| a.vertex_attr() == attr)
+            .map(|p| self.attrs[p])
     }
 
     //mp iter_attrs
     /// Iterate through attributes
-    pub fn iter_attrs(&self) -> std::slice::Iter<(VertexAttr, &BufferDataAccessor<'vertices, R>)> {
+    pub fn iter_attrs(&self) -> std::slice::Iter<&BufferDataAccessor<'vertices, R>> {
         self.attrs.iter()
     }
 
@@ -126,7 +123,7 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
         if let Some(i) = self.indices {
             i.create_client(renderer)
         }
-        for (_attr, data_accessor) in self.iter_attrs() {
+        for data_accessor in self.iter_attrs() {
             data_accessor.create_client(renderer);
         }
         *(self.rc_client.borrow_mut()) = renderer.create_vertices_client(self);

@@ -64,8 +64,11 @@ where
             .clone()
             .into();
         let mut attrs = Vec::new();
-        for (attr, buffer) in vertices.iter_attrs() {
-            attrs.push((*attr, buffer.borrow_client().as_vertex_buffer().clone()));
+        for buffer in vertices.iter_attrs() {
+            attrs.push((
+                buffer.vertex_attr(),
+                buffer.borrow_client().as_vertex_buffer().clone(),
+            ));
         }
         let attrs = attrs.into();
         Self {

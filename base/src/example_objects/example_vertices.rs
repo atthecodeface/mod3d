@@ -264,7 +264,7 @@ impl<'a, R: Renderable> ExampleVertices<'a, R> {
         let mut vertices = Vertices::new(i, v);
         for (attr, view_id) in attrs {
             let v = self.accessors.data_accessor(*view_id);
-            vertices.add_attr(*attr, v);
+            vertices.add_attr(v);
         }
         self.vertices.push(vertices);
         n.into()
