@@ -16,30 +16,36 @@ use crate::{BufferData, Renderable, VertexDesc};
 /// to describe *just* an individual field element.
 pub struct BufferDescriptor<'a, R: Renderable + ?Sized> {
     /// The `BufferData` that contains the actual vertex attribute data
-    pub data: &'a BufferData<'a, R>,
-
-    /// Stride of data in the buffer - 0 for count*sizeof(ele_type)
-    /// Unused for indices
-    pub stride: u32,
+    data: &'a BufferData<'a, R>,
 
     /// Byte offset to first data inside 'data'
-    pub byte_offset: u32,
+    byte_offset: u32,
+
+    // Indexed by instance - if true, instance 'n' vertex 'v' use the
+    // data from index 'n'; if false then instance 'n' vertex 'v' use
+    // the data from index 'v'.
+    //
+    // index_by_instance: bool,
+    /// Stride of data in the buffer
+    ///
+    /// If 0, then the maximum of the elements[].byte_offset() + byte_length()
+    stride: u32,
 
     /// Description of the layout of the elements of the actual portion of buffer data
     ///
     /// This could become a reference to a struct that is borrowed here, with its own client ref
-    pub elements: Vec<VertexDesc>,
+    elements: Vec<VertexDesc>,
 
     /// The client bound to data\[byte_offset\] .. + byte_length
     ///
-    /// This must be held as a [RefCell] as the [BufferData] is
-    /// created early in the process, prior to any `BufferDescriptor`s using
-    /// it - which then have shared references to the data - but the
+    /// This must be held as a [RefCell] as the [BufferDescriptor] is
+    /// created early in the process, prior to any `BufferDataAccessor`s using
+    /// it - which then have shared references to the descriptor - but the
     /// client is created afterwards
     rc_client: RefCell<R::Descriptor>,
 }
 
-//ip Display for Object
+//ip Display for BufferDescriptor
 impl<'a, R: Renderable> std::fmt::Debug for BufferDescriptor<'a, R>
 where
     R: Renderable,
@@ -60,6 +66,11 @@ where
 
 //ip BufferDescriptor
 impl<'a, R: Renderable> BufferDescriptor<'a, R> {
+    //ap data
+    pub fn data(&self) -> &BufferData<'a, R> {
+        &self.data
+    }
+
     //fp new
     /// Create a new view of a `BufferData`
     pub fn new(

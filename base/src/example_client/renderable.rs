@@ -86,8 +86,8 @@ impl Renderable for Id {
         client: &mut Self::Descriptor,
         buffer_desc: &BufferDescriptor<Self>,
     ) {
-        buffer_desc.data.create_client(self);
-        *client = buffer_desc.data.borrow_client().clone();
+        buffer_desc.data().create_client(self);
+        *client = buffer_desc.data().borrow_client().clone();
     }
     fn init_buffer_view_client(
         &mut self,

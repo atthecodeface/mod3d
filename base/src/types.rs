@@ -107,8 +107,13 @@ impl BufferElementType {
 }
 
 //tp VertexDesc
-/// A descriptor of the contents of one aspect of data for a Vertex
-#[derive(Debug, Clone, Copy)]
+/// A descriptor of the contents of one aspect of data for a Vertex;
+/// in essence a 'field' of a Vertex structure
+///
+/// Such an field is a scalar, vector, or matrix of
+/// [BufferElementType], starting at a byte offset within the parent
+/// structure, and it has a target [VertexAttr] usage
+#[derive(Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct VertexDesc {
     /// Vertex attribute that this describes, e.g. Position, TexCoordsN, Joints
@@ -122,6 +127,122 @@ pub struct VertexDesc {
 
     /// Type of each element, e.g. Float32, SInt16, UInt8
     ele_type: BufferElementType,
+}
+
+//ip Display for VertexDesc
+impl std::fmt::Debug for VertexDesc {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        if self.dims[0] == 0 {
+            write!(
+                fmt,
+                "VertexDesc{{{:?}: {:?} @ {}}}",
+                self.attr, self.ele_type, self.byte_offset
+            )
+        } else if self.dims[1] == 0 {
+            write!(
+                fmt,
+                "VertexDesc{{{:?}: {:?}[{}] @ {}}}",
+                self.attr, self.ele_type, self.dims[0], self.byte_offset
+            )
+        } else {
+            write!(
+                fmt,
+                "VertexDesc{{{:?}: {:?}[{}, {}] @ {}}}",
+                self.attr, self.ele_type, self.dims[0], self.dims[1], self.byte_offset
+            )
+        }
+    }
+}
+
+//ip VertexDesc
+impl VertexDesc {
+    //cp scalar
+    /// Create a scalar [VertexDescr] for a [VertexAttr] of a given
+    /// [BufferElementType], at an offset within its parent data.
+    pub fn scalar(attr: VertexAttr, ele_type: BufferElementType, byte_offset: u16) -> Self {
+        Self {
+            attr,
+            byte_offset,
+            dims: [0, 0],
+            ele_type,
+        }
+    }
+
+    //cp vec
+    /// Create a vector of 'len' [VertexDescr] for a [VertexAttr] of a given
+    /// [BufferElementType], at an offset within its parent data.
+    pub fn vec(attr: VertexAttr, ele_type: BufferElementType, len: u8, byte_offset: u16) -> Self {
+        Self {
+            attr,
+            byte_offset,
+            dims: [len, 0],
+            ele_type,
+        }
+    }
+
+    //cp mat
+    /// Create a matrix of 'dims' [VertexDescr] for a [VertexAttr] of a given
+    /// [BufferElementType], at an offset within its parent data.
+    pub fn mat(
+        attr: VertexAttr,
+        ele_type: BufferElementType,
+        dims: [u8; 2],
+        byte_offset: u16,
+    ) -> Self {
+        Self {
+            attr,
+            byte_offset,
+            dims,
+            ele_type,
+        }
+    }
+
+    //ap vertex_attr
+    /// Retrieve the vertex attribute this field is for
+    #[inline]
+    pub fn vertex_attr(&self) -> VertexAttr {
+        self.attr
+    }
+
+    //ap byte_offset
+    /// Retrieve the byte_offset within the parent structure for this field
+    #[inline]
+    pub fn byte_offset(&self) -> u16 {
+        self.byte_offset
+    }
+
+    //ap dims
+    /// Retrieve the dimensions of this field - if scalar, for example, this is [0,0]
+    #[inline]
+    pub fn dims(&self) -> [u8; 2] {
+        self.dims
+    }
+
+    //ap ele_type
+    /// Retrieve the [BufferElementType] of the field
+    #[inline]
+    pub fn ele_type(&self) -> BufferElementType {
+        self.ele_type
+    }
+
+    //ap count
+    /// Get the count of the number of elements in the field
+    #[inline]
+    pub fn count(&self) -> usize {
+        if self.dims[0] == 0 {
+            1
+        } else if self.dims[1] == 0 {
+            self.dims[0] as usize
+        } else {
+            (self.dims[0] as usize) * (self.dims[1] as usize)
+        }
+    }
+
+    //ap byte_length
+    /// Get the byte length of the field
+    pub fn byte_length(&self) -> usize {
+        self.count() * self.ele_type.byte_length()
+    }
 }
 
 //a Drawing - VertexAttr, PrimitiveType, MaterialAspect, etc
