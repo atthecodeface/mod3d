@@ -14,6 +14,8 @@ use crate::{BufferData, Renderable, VertexDesc};
 ///
 /// A [BufferDescriptor] is used within a [crate::BufferDataAccessor]
 /// to describe *just* an individual field element.
+///
+/// TODO: Add a byte_length field
 pub struct BufferDescriptor<'a, R: Renderable> {
     /// The `BufferData` that contains the actual vertex attribute data
     data: &'a BufferData<'a, R>,
@@ -111,6 +113,16 @@ impl<'a, R: Renderable> BufferDescriptor<'a, R> {
             elements,
             rc_client,
         }
+    }
+
+    //mp add_vertex_desc
+    pub fn add_vertex_desc(&mut self, vertex_desc: VertexDesc) -> u8 {
+        let n = self.elements.len() as u8;
+        self.stride = self
+            .stride
+            .max(vertex_desc.byte_offset() as u32 + vertex_desc.byte_length());
+        self.elements.push(vertex_desc);
+        n
     }
 
     //mp create_client

@@ -1,17 +1,20 @@
 //a Imports
 use mod3d_base::hierarchy::NodeEnumOp;
-use mod3d_base::{BufferData, BufferDataAccessor, BufferIndexAccessor, ByteBuffer, Renderable};
+use mod3d_base::{
+    BufferData, BufferDataAccessor, BufferDescriptor, BufferIndexAccessor, ByteBuffer, Renderable,
+    VertexDesc,
+};
 
 use crate::try_buf_parse_base64;
 use crate::Gltf;
 use crate::{
     AccessorIndex, BufferIndex, BufferUsage, ImageIndex, MaterialIndex, MeshIndex, NodeIndex,
-    PrimitiveIndex, SamplerIndex, TextureIndex,
+    PrimitiveIndex, SamplerIndex, TextureIndex, ViewIndex,
 };
 use crate::{Error, Result};
 use crate::{
-    Indexable, ODAccIndex, ODImagesIndex, ODMaterialsIndex, ODTexturesIndex, ODUses,
-    ODVerticesIndex,
+    Indexable, ODAccIndex, ODBufDescIndex, ODImagesIndex, ODMaterialsIndex, ODTexturesIndex,
+    ODUses, ODVerticesIndex,
 };
 
 //a ObjectData
@@ -73,11 +76,23 @@ pub struct ObjectData {
     /// json_value. which maps a Json buffer to
     /// the range of it that is used
     buffer_usage: Vec<BufferUsage>,
-    /// For each accessor, the index into the Vec<BufferDataAccessor> (if used and it
+
+    /// For each buffer descriptor, the index into the Vec<BufferDescriptor> (if used and it
     /// worked); same size as gltf.buffer_views
+    buffer_descriptors: Vec<Option<ODBufDescIndex>>,
+
+    /// For each accessor (used by a primitive), the index into the
+    /// Vec<BufferDescriptor> and the vertex attr number within that
     ///
-    /// FIXME - should this be data_accessors? What about indices?
+    /// Same size as gltf.accessors
+    accessors_as_bd: Vec<Option<(ODBufDescIndex, u8)>>,
+
+    /// For each accessor (used by a primitive), the index into the
+    /// Vec<BufferDataAccessor>
+    ///
+    /// Same size as gltf.accessors
     accessors: Vec<Option<ODAccIndex>>,
+
     /// For all meshes, if used Some(array of possible Vertices index for each
     /// primitive); same size as gltf.meshes
     ///
@@ -99,6 +114,21 @@ impl std::ops::Index<BufferIndex> for ObjectData {
 impl std::ops::IndexMut<BufferIndex> for ObjectData {
     fn index_mut(&mut self, index: BufferIndex) -> &mut Self::Output {
         &mut self.buffer_usage[index.as_usize()]
+    }
+}
+
+//ip Index<ViewIndex> for ObjectData
+impl std::ops::Index<ViewIndex> for ObjectData {
+    type Output = Option<ODBufDescIndex>;
+    fn index(&self, index: ViewIndex) -> &Self::Output {
+        &self.buffer_descriptors[index.as_usize()]
+    }
+}
+
+//ip IndexMut<ViewIndex> for ObjectData
+impl std::ops::IndexMut<ViewIndex> for ObjectData {
+    fn index_mut(&mut self, index: ViewIndex) -> &mut Self::Output {
+        &mut self.buffer_descriptors[index.as_usize()]
     }
 }
 
@@ -138,6 +168,7 @@ impl ObjectData {
     /// Create a new [ObjectData]
     pub fn new(gltf: &Gltf) -> Self {
         let num_buffers = gltf.buffers().len();
+        let num_views = gltf.buffer_views().len();
         let num_meshes = gltf.meshes().len();
         let num_accessors = gltf.accessors().len();
 
@@ -148,7 +179,9 @@ impl ObjectData {
         let images_used = ODUses::new();
         let samplers_used = ODUses::new();
         let buffer_usage = vec![Default::default(); num_buffers];
+        let buffer_descriptors = vec![Default::default(); num_views];
         let meshes = vec![Default::default(); num_meshes];
+        let accessors_as_bd = vec![Default::default(); num_accessors];
         let accessors = vec![Default::default(); num_accessors];
         Self {
             nodes_used,
@@ -156,7 +189,9 @@ impl ObjectData {
             materials_used,
             textures_used,
             buffer_usage,
+            buffer_descriptors,
             meshes,
+            accessors_as_bd,
             accessors,
             images_used,
             samplers_used,
@@ -489,34 +524,93 @@ impl ObjectData {
         BufferIndexAccessor::new(data, count as u32, ba.component_type(), byte_offset as u32)
     }
 
-    //mi make_data_accessor
-    fn make_data_accessor<'buffers, F, R>(
+    //mi make_descriptor
+    fn make_descriptor<'buffers, F, R>(
         &self,
         gltf: &Gltf,
         buffer_data: &F,
-        acc: AccessorIndex,
-    ) -> BufferDataAccessor<'buffers, R>
+        view: ViewIndex,
+    ) -> BufferDescriptor<'buffers, R>
     where
         F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
         R: Renderable,
     {
-        let ba = &gltf[acc];
-        let bv = ba.buffer_view().unwrap();
-        let bv = &gltf[bv];
+        let bv = &gltf[view];
         let buffer = &self[bv.buffer()];
         let data = buffer.vertex_bd();
         let data = buffer_data(data.as_usize());
-        let byte_offset = ba.byte_offset() + bv.byte_offset() - (data.byte_offset() as usize);
-        let byte_stride = bv.byte_stride(ba.ele_byte_size());
-        let count = ba.elements_per_data();
-        eprintln!("make_data_accessor ba:? {data:?}, {count}, {byte_offset}, {byte_stride}");
-        BufferDataAccessor::new(
-            data,
-            count as u32,
-            ba.component_type(),
-            byte_offset as u32,
-            byte_stride as u32,
-        )
+
+        let byte_offset = bv.byte_offset() - (data.byte_offset() as usize);
+        let byte_stride = bv.byte_stride(0);
+        let byte_length = bv.byte_length();
+        eprintln!("make_descriptor {view:?} {data:?}, {byte_offset}+{byte_length}, {byte_stride}");
+        BufferDescriptor::new(data, byte_offset as u32, byte_stride as u32, vec![])
+    }
+
+    //mp gen_descriptors
+    /// Generate [BufferDescriptor] from all of the GltfBufferView
+    ///
+    /// Should be invoked after gen_buffer_data has returned a Vec<> of the
+    /// BufferData
+    ///
+    /// This creates a vec of (ViewIndex, Vec[VertexDesc]), from which
+    /// an array of BufferDescriptor are created and returned
+    ///
+    /// It also creates the something array which is then
+    pub fn gen_descriptors<'buffers, F, R>(
+        &mut self,
+        gltf: &Gltf,
+        buffer_data: &F,
+    ) -> Vec<BufferDescriptor<'buffers, R>>
+    where
+        F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
+        R: Renderable,
+    {
+        let mut buffer_descriptors = vec![];
+
+        for i in 0..self.meshes.len() {
+            let mi: MeshIndex = i.into();
+            if self[mi].is_none() {
+                continue;
+            }
+            let mesh = &gltf[mi];
+            for p in mesh.primitives() {
+                for (vertex_attr, va) in p.attributes() {
+                    if self[*va].is_some() {
+                        continue;
+                    }
+                    let ba = &gltf[*va];
+                    let bv = ba.buffer_view().unwrap();
+                    if self[bv].is_none() {
+                        let bd = self.make_descriptor(gltf, buffer_data, bv);
+                        self.buffer_descriptors[*bv] = Some(buffer_descriptors.len().into());
+                        buffer_descriptors.push(bd);
+                    }
+                    let n = self[bv].unwrap();
+                    let dims = {
+                        match ba.elements_per_data() {
+                            1 => [0, 0],
+                            9 => [3, 3],
+                            16 => [4, 4],
+                            n => [n as u8, 0],
+                        }
+                    };
+                    let vertex_desc = VertexDesc::new(
+                        *vertex_attr,
+                        ba.component_type(),
+                        dims,
+                        ba.byte_offset() as u16,
+                    );
+                    eprintln!(
+                        "add_data_accessor {} {vertex_desc:?}",
+                        buffer_descriptors[n.as_usize()]
+                    );
+                    let v = buffer_descriptors[n.as_usize()].add_vertex_desc(vertex_desc);
+                    self.accessors_as_bd[(*va).as_usize()] = Some((n, v))
+                }
+            }
+        }
+        buffer_descriptors
     }
 
     //mp gen_accessors
@@ -525,16 +619,18 @@ impl ObjectData {
     ///
     /// Should be invoked after gen_buffer_data has returned a Vec<> of the
     /// BufferData
-    pub fn gen_accessors<'buffers, F, R>(
+    pub fn gen_accessors<'buffers, F, G, R>(
         &mut self,
         gltf: &Gltf,
         buffer_data: &F,
+        buffer_desc: &G,
     ) -> (
         Vec<BufferIndexAccessor<'buffers, R>>,
         Vec<BufferDataAccessor<'buffers, R>>,
     )
     where
         F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
+        G: Fn(usize) -> &'buffers BufferDescriptor<'buffers, R>,
         R: Renderable,
     {
         let mut buffer_index_accessors = vec![];
@@ -554,14 +650,15 @@ impl ObjectData {
                     self[ia] = Some(buffer_index_accessors.len().into());
                     buffer_index_accessors.push(b);
                 }
-                for (_, va) in p.attributes() {
-                    if self[*va].is_some() {
-                        continue;
-                    }
-                    let b = self.make_data_accessor(gltf, buffer_data, *va);
-                    self[*va] = Some(buffer_data_accessors.len().into());
-                    buffer_data_accessors.push(b);
-                }
+            }
+            for (i, opt_n_v) in self.accessors_as_bd.iter().enumerate() {
+                let Some((n, v)) = opt_n_v else {
+                    continue;
+                };
+                let acc = BufferDataAccessor::new(buffer_desc(n.as_usize()), *v);
+                let n = buffer_data_accessors.len();
+                self.accessors[i] = Some(n.into());
+                buffer_data_accessors.push(acc);
             }
         }
         (buffer_index_accessors, buffer_data_accessors)

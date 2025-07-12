@@ -41,16 +41,24 @@ pub fn new<G: Gl>(
     for n in node_names {
         od.add_object(&gltf, gltf.get_node(n).unwrap());
     }
+
     od.derive_uses(&gltf);
+
     let buffers = od
         .gen_byte_buffers(&mut gltf, &mod3d_gltf::buf_parse_fail, opt_buffer_0)
         .map_err(|e| format!("{e:?}"))?;
+
     let buffer_data = od.gen_buffer_data::<_, _, G>(&|x| &buffers[x]);
+
+    let (buffer_descriptors) = od.gen_descriptors(&gltf, &|x| &buffer_data[x]);
+
     let (buffer_index_accessors, buffer_data_accessors) =
-        od.gen_accessors(&gltf, &|x| &buffer_data[x]);
+        od.gen_accessors(&gltf, &|x| &buffer_data[x], &|x| &buffer_descriptors[x]);
+
     let vertices = od.gen_vertices(&gltf, &|x| &buffer_index_accessors[x], &|x| {
         &buffer_data_accessors[x]
     });
+
     use image::io::Reader;
     use image::DynamicImage;
     use image::ImageFormat;

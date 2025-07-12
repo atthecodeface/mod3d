@@ -9,11 +9,15 @@ This provides a function to create [ExampleVertices] object that is a triangle o
 use super::ExampleVertices;
 use crate::{
     BufferElementType, Mesh, Primitive, PrimitiveType, Renderable, ShortIndex, VertexAttr,
+    VertexDesc,
 };
 
 /// Add positions, normals and indices to an [ExampleVertices] for a
 /// flat upward-facing triangle on z=0 of a given size
-pub fn new<R: Renderable>(eg: &mut ExampleVertices<R>, size: f32) {
+pub fn new<R: Renderable>(eg: &mut ExampleVertices<R>, size: f32)
+where
+    <R as Renderable>::Descriptor: Unpin,
+{
     let vertex_data = [
         -size, -size, 0.0, size, -size, 0.0, 0.0, size, 0.0, 0., 0., 1., 0., 0., 1., 0., 0., 1.,
     ];
@@ -23,8 +27,18 @@ pub fn new<R: Renderable>(eg: &mut ExampleVertices<R>, size: f32) {
     let data_indices = eg.push_byte_buffer(Box::new(index_data));
 
     let indices = eg.push_index_accessor(data_indices, 3, BufferElementType::UInt8, 0);
-    let vertices = eg.push_data_accessor(data_vertices, 3, BufferElementType::Float32, 0, 0);
-    let normals = eg.push_data_accessor(data_vertices, 3, BufferElementType::Float32, 9 * 4, 0);
+
+    let vertex_desc = eg.push_descriptor(data_vertices, 0, 0); // stride used to be 0
+    let vertices = eg.push_data_accessor(
+        vertex_desc,
+        VertexDesc::vec(VertexAttr::Position, BufferElementType::Float32, 3, 0),
+    );
+
+    let normal_desc = eg.push_descriptor(data_vertices, 9 * 4, 0); // stride used to be 0
+    let normals = eg.push_data_accessor(
+        normal_desc,
+        VertexDesc::vec(VertexAttr::Normal, BufferElementType::Float32, 3, 0),
+    );
 
     // Create set of data (indices, vertex data) to by subset into by the meshes and their primitives
     eg.push_vertices(Some(indices), vertices, &[(VertexAttr::Normal, normals)]);

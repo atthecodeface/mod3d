@@ -69,6 +69,8 @@ impl GltfBuffer {
 //tp GltfBufferView
 /// A view onto a buffer (referred to by an index into the Gltf file array of
 /// buffers), referencing a subset of the buffer given by an offset and length
+///
+/// This becomes a BufferDescriptor
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -129,11 +131,13 @@ pub struct GltfAccessor {
     /// contents
     #[cfg_attr(feature = "serde", serde(rename = "bufferView"))]
     buffer_view: Option<ViewIndex>,
+
     /// Byte offset from start of the view (or offset+k*stride) for the
     /// N-element data structure the accessor defines
     #[cfg_attr(feature = "serde", serde(rename = "byteOffset"))]
     #[cfg_attr(feature = "serde", serde(default))]
     byte_offset: usize,
+
     /// The type of the element; in Gltf JSON this is encoded with a magic
     /// number; the default value is signed 32-bit integer
     #[cfg_attr(feature = "serde", serde(rename = "componentType"))]
@@ -148,9 +152,13 @@ pub struct GltfAccessor {
         serde(serialize_with = "serialize::ele_type_to_comp_type")
     )]
     component_type: mod3d_base::BufferElementType,
-    #[cfg_attr(feature = "serde", serde(rename = "count"))]
+
+    /// Count of the number of data
     // minimum 1
+    #[cfg_attr(feature = "serde", serde(rename = "count"))]
     count: usize,
+
+    /// Number of elements per data
     #[cfg_attr(feature = "serde", serde(rename = "type"))]
     #[cfg_attr(
         feature = "serde",
@@ -163,6 +171,7 @@ pub struct GltfAccessor {
     // optional: name, extensions, extras
 }
 
+//ip GltfAccessor
 impl GltfAccessor {
     pub fn new(
         buffer_view: ViewIndex,

@@ -13,6 +13,7 @@ use crate::{AccessorIndex, Indexable, MaterialIndex, PrimitiveIndex};
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct GltfPrimitive {
+    /// Attributes mapping a VertexAttr to an AccessorIndex
     // This must be a map from attribute name to accessor index
     //
     // attribute name - corresponds to mod3d_base::VertexAttr
@@ -22,6 +23,8 @@ pub struct GltfPrimitive {
     )]
     #[cfg_attr(feature = "serde", serde(serialize_with = "serialize::attr_to_attr"))]
     attributes: Vec<(mod3d_base::VertexAttr, AccessorIndex)>,
+
+    /// Mode for drawing the primitive
     // 0-6: POINTS, LINES, LINE_LOOP, LINE_STRIP, TRIANGLES, TRIANGLE_STRIP,
     // TRIANGLE_FAN default is 4:triangles
     #[cfg_attr(feature = "serde", serde(default = "deserialize::pt_triangles"))]
@@ -31,9 +34,13 @@ pub struct GltfPrimitive {
     )]
     #[cfg_attr(feature = "serde", serde(serialize_with = "serialize::primitive_type"))]
     mode: mod3d_base::PrimitiveType,
+
+    /// Material index to use when drawing the primitive
     // optional
     #[cfg_attr(feature = "serde", serde(default))]
     material: Option<MaterialIndex>,
+
+    /// Indices to use (AccessorIndex) if indexed (otherwise use 0..N)
     // optional - if not present then drawArrays should be used
     #[cfg_attr(feature = "serde", serde(default))]
     indices: Option<AccessorIndex>,

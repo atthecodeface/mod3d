@@ -80,6 +80,7 @@ index_type!(PrimitiveIndex);
 
 index_type!(ODBufIndex);
 index_type!(ODBufDataIndex);
+index_type!(ODBufDescIndex);
 index_type!(ODAccIndex);
 index_type!(ODVerticesIndex);
 index_type!(ODImagesIndex);

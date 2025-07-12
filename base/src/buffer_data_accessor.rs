@@ -10,11 +10,9 @@ use crate::{BufferData, BufferDescriptor, BufferElementType, Renderable, VertexA
 ///
 /// A `BufferDataAccessor` is used for a single attribute of a set of data, such as
 /// Position or Normal.
-///
-/// FIXME - change to using borrowed BufferDescriptor...
 pub struct BufferDataAccessor<'a, R: Renderable> {
     /// The `BufferData` that contains the actual vertex attribute data
-    desc: BufferDescriptor<'a, R>,
+    desc: &'a BufferDescriptor<'a, R>,
 
     /// Element index in [BufferDescriptor]
     desc_index: u8,
@@ -46,29 +44,11 @@ where
 impl<'a, R: Renderable> BufferDataAccessor<'a, R> {
     //fp new
     /// Create a new view of a `BufferData`
-    pub fn new(
-        data: &'a BufferData<'a, R>,
-        count: u32, // count is number of ele_type in an attribute
-        ele_type: BufferElementType,
-        byte_offset: u32, // offset in bytes from start of data
-        stride: u32,      /* stride between elements
-                           * (0->count*sizeof(ele_type)) */
-    ) -> Self {
+    pub fn new(desc: &'a BufferDescriptor<'a, R>, desc_index: u8) -> Self {
         let rc_client = RefCell::new(R::DataAccessor::default());
-        let desc = BufferDescriptor::new(
-            data,
-            byte_offset,
-            stride,
-            vec![VertexDesc::vec(
-                VertexAttr::Position,
-                ele_type,
-                count as u8,
-                0,
-            )],
-        );
         Self {
             desc,
-            desc_index: 0,
+            desc_index,
             rc_client,
         }
     }

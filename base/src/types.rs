@@ -197,6 +197,23 @@ impl VertexDesc {
         }
     }
 
+    //cp new
+    /// Create a new of 'dims' [VertexDescr] for a [VertexAttr] of a given
+    /// [BufferElementType], at an offset within its parent data.
+    pub fn new(
+        attr: VertexAttr,
+        ele_type: BufferElementType,
+        dims: [u8; 2],
+        byte_offset: u16,
+    ) -> Self {
+        Self {
+            attr,
+            byte_offset,
+            dims,
+            ele_type,
+        }
+    }
+
     //ap vertex_attr
     /// Retrieve the vertex attribute this field is for
     #[inline]

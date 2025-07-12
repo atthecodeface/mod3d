@@ -1,9 +1,10 @@
 //a Imports
 use std::cell::RefCell;
+use std::pin::Pin;
 
 use crate::{
-    BufferData, BufferDataAccessor, BufferElementType, BufferIndexAccessor, ByteBuffer, Renderable,
-    ShortIndex, VertexAttr, Vertices,
+    BufferData, BufferDataAccessor, BufferDescriptor, BufferElementType, BufferIndexAccessor,
+    ByteBuffer, Renderable, ShortIndex, VertexAttr, VertexDesc, Vertices,
 };
 
 //a ExampleBuffers
@@ -50,13 +51,10 @@ impl<'buffers> Buffers<'buffers> {
 //tp DataAccessors
 /// This structure helps for objects; the data is
 pub struct DataAccessors<'buffers, R: Renderable> {
-    // data might be pinned, but the usage model here is to not permit
-    // data to change once accessors have started to be created, so
-    // the borrowed data (in accessors) cannot be modified once there
-    // are referernces to it.
-    data: Vec<Box<BufferData<'buffers, R>>>,
-    index_accessors: Vec<Box<BufferIndexAccessor<'buffers, R>>>,
-    data_accessors: Vec<Box<BufferDataAccessor<'buffers, R>>>,
+    data: Vec<Pin<Box<BufferData<'buffers, R>>>>,
+    descriptors: Vec<Pin<Box<BufferDescriptor<'buffers, R>>>>,
+    index_accessors: Vec<Pin<Box<BufferIndexAccessor<'buffers, R>>>>,
+    data_accessors: Vec<Pin<Box<BufferDataAccessor<'buffers, R>>>>,
 }
 
 //ip DataAccessors
@@ -66,9 +64,11 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
     pub fn new() -> Self {
         let data = Vec::new();
         let index_accessors = Vec::new();
+        let descriptors = Vec::new();
         let data_accessors = Vec::new();
         Self {
             data,
+            descriptors,
             data_accessors,
             index_accessors,
         }
@@ -86,7 +86,7 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
         let n = self.data.len();
         let b = buffers.buffer(buffer_n);
         let data = Box::new(BufferData::new(b, byte_offset, byte_length));
-        self.data.push(data);
+        self.data.push(data.into());
         n
     }
 
@@ -106,28 +106,40 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
             )
         };
         let accessor = Box::new(BufferIndexAccessor::new(d, num, et, ofs));
-        self.index_accessors.push(accessor);
+        self.index_accessors.push(accessor.into());
         n
     }
 
-    //fp push_data_accessor
-    /// Create a new [BufferAccessor] on a particular [BufferData] instance that has already been pushed
-    pub fn push_data_accessor(
-        &mut self,
-        data: usize,
-        num: u32,
-        et: BufferElementType,
-        ofs: u32,
-        stride: u32,
-    ) -> usize {
+    //fp push_descriptor
+    /// Create a new [BufferDescriptor<] on a particular [BufferData]
+    /// instance that has already been pushed
+    pub fn push_descriptor(&mut self, data: usize, byte_offset: u32, stride: u32) -> usize {
         let n = self.data_accessors.len();
         let d = unsafe {
             std::mem::transmute::<&BufferData<'_, R>, &'buffers BufferData<'buffers, R>>(
                 &self.data[data],
             )
         };
-        let accessor = Box::new(BufferDataAccessor::new(d, num, et, ofs, stride));
-        self.data_accessors.push(accessor);
+        let desc = Box::new(BufferDescriptor::new(d, byte_offset, stride, vec![]));
+        self.descriptors.push(desc.into());
+        n
+    }
+
+    //fp push_data_accessor
+    /// Create a new [BufferAccessor] on a particular [BufferData] instance that has already been pushed
+    pub fn push_data_accessor(&mut self, desc: usize, vertex_desc: VertexDesc) -> usize
+    where
+        <R as Renderable>::Descriptor: Unpin,
+    {
+        let n = self.data_accessors.len();
+        let desc_n = self.descriptors[desc].add_vertex_desc(vertex_desc);
+        let desc = unsafe {
+            std::mem::transmute::<&BufferDescriptor<'_, R>, &'buffers BufferDescriptor<'buffers, R>>(
+                &self.descriptors[desc],
+            )
+        };
+        let accessor = Box::new(BufferDataAccessor::new(desc, desc_n));
+        self.data_accessors.push(accessor.into());
         n
     }
 
@@ -140,7 +152,7 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
                 std::mem::transmute::<
                     &BufferIndexAccessor<'_, R>,
                     &'buffers BufferIndexAccessor<'buffers, R>,
-                >(buffer)
+                >(&*buffer)
             })
         } else {
             None
@@ -158,7 +170,7 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
             std::mem::transmute::<
                 &BufferDataAccessor<'_, R>,
                 &'buffers BufferDataAccessor<'buffers, R>,
-            >(buffer)
+            >(&*buffer)
         }
     }
 }
@@ -218,18 +230,20 @@ impl<'a, R: Renderable> ExampleVertices<'a, R> {
         self.accessors.push_index_accessor(data, num, et, ofs)
     }
 
+    //fp push_descriptor
+    /// Create a new [BufferDescriptor<] on a particular [BufferData]
+    /// instance that has already been pushed
+    pub fn push_descriptor(&mut self, data: usize, byte_offset: u32, stride: u32) -> usize {
+        self.accessors.push_descriptor(data, byte_offset, stride)
+    }
+
     //fp push_data_accessor
     /// Create a new [BufferAccessor] on a particular [ByteBuffer] instance that has already been pushed
-    pub fn push_data_accessor(
-        &mut self,
-        data: usize,
-        num: u32,
-        et: BufferElementType,
-        ofs: u32,
-        stride: u32,
-    ) -> usize {
-        self.accessors
-            .push_data_accessor(data, num, et, ofs, stride)
+    pub fn push_data_accessor(&mut self, desc: usize, vertex_desc: VertexDesc) -> usize
+    where
+        <R as Renderable>::Descriptor: Unpin,
+    {
+        self.accessors.push_data_accessor(desc, vertex_desc)
     }
 
     //fp push_vertices
