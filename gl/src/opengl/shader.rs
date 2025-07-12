@@ -38,7 +38,7 @@ impl Shader {
                 |id| utils::get_shaderiv(id, gl::INFO_LOG_LENGTH),
                 |id, len, buf| unsafe { gl::GetShaderInfoLog(id, len, std::ptr::null_mut(), buf) },
             );
-            Err(format!("Error compiling {} shader {}", shader_kind, err))
+            Err(format!("Error compiling {shader_kind} shader {err}"))
         } else {
             Ok(Self { id })
         }

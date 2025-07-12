@@ -9,7 +9,11 @@ use crate::{BufferIndex, ViewIndex};
 
 //a GltfBuffer
 //tp GltfBuffer
+/// A buffer description, such as a file path or URI
 ///
+/// This includs a byte length, which is the required length of the
+/// data from the file or URI (so that byte offsets may be validated,
+/// for example).
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -63,7 +67,7 @@ impl GltfBuffer {
 }
 
 //tp GltfBufferView
-/// A view onto a buffer (refered to be index into the Gltf file array of
+/// A view onto a buffer (referred to by an index into the Gltf file array of
 /// buffers), referencing a subset of the buffer given by an offset and length
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -199,7 +203,7 @@ impl GltfAccessor {
 
     //ap ele_byte_size
     pub fn ele_byte_size(&self) -> usize {
-        self.elements_per_data * self.component_type().byte_length()
+        self.elements_per_data * self.component_type().byte_length() as usize
     }
 
     //ap elements_per_data

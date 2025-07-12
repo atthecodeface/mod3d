@@ -91,7 +91,7 @@ impl BufferElementType {
     }
 
     /// Get the length in bytes of the element type
-    pub fn byte_length(self) -> usize {
+    pub fn byte_length(self) -> u32 {
         use BufferElementType::*;
         match self {
             Float32 => 4,
@@ -228,19 +228,19 @@ impl VertexDesc {
     //ap count
     /// Get the count of the number of elements in the field
     #[inline]
-    pub fn count(&self) -> usize {
+    pub fn count(&self) -> u32 {
         if self.dims[0] == 0 {
             1
         } else if self.dims[1] == 0 {
-            self.dims[0] as usize
+            self.dims[0] as u32
         } else {
-            (self.dims[0] as usize) * (self.dims[1] as usize)
+            (self.dims[0] as u32) * (self.dims[1] as u32)
         }
     }
 
     //ap byte_length
     /// Get the byte length of the field
-    pub fn byte_length(&self) -> usize {
+    pub fn byte_length(&self) -> u32 {
         self.count() * self.ele_type.byte_length()
     }
 }

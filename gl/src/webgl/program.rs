@@ -84,7 +84,7 @@ impl Program {
     ) -> Result<&mut Self, String> {
         let attr_index = context.get_attrib_location(&self.program, name);
         if attr_index < 0 {
-            Err(format!("Unable to find attribute {} in program", name))
+            Err(format!("Unable to find attribute {name} in program"))
         } else {
             let attr_index = attr_index as u32;
             self.attributes.push((attr_index, vertex_attr));
@@ -104,7 +104,7 @@ impl Program {
             self.uniforms.push((uniform_index, uniform_id));
             Ok(self)
         } else {
-            Err(format!("Unable to find uniform {} in program", name))
+            Err(format!("Unable to find uniform {name} in program"))
         }
     }
 
@@ -118,7 +118,7 @@ impl Program {
     ) -> Result<&mut Self, String> {
         let uniform_index = context.get_uniform_block_index(&self.program, name);
         //        if uniform_index == gl::INVALID_INDEX {
-        //            Err(format!("Unable to find uniform block {} in program", name))
+        //            Err(format!("Unable to find uniform block {name} in program"))
         //        } else {
         self.uniform_buffers.push((uniform_index, id));
         Ok(self)
@@ -140,7 +140,7 @@ impl Program {
             self.textures.push((uniform_index, texture_id, unit as u32));
             Ok(self)
         } else {
-            Err(format!("Unable to find uniform {} in program", name))
+            Err(format!("Unable to find uniform {name} in program"))
         }
     }
 

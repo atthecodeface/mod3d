@@ -98,8 +98,8 @@ impl Buffer {
     ) {
         assert!(self.is_none());
         render_context.bind_vertex_array(None);
-        let data = view.data.as_ref();
-        let data = data.split_at(view.byte_offset as usize).1;
+        let data = view.data().as_ref();
+        let data = data.split_at(view.byte_offset() as usize).1;
         let gl = render_context.create_buffer().unwrap();
         render_context.bind_buffer(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, Some(&gl));
         // render_context.buffer_data_with_u8_array(
@@ -275,7 +275,7 @@ impl Buffer {
         log_gl_buffer(
             render_context,
             self.gl.borrow().as_ref(),
-            &format!("uniform_update_data: {:?} {}", data, byte_offset),
+            &format!("uniform_update_data: {data:?} {byte_offset}"),
             0,
             0,
             0,

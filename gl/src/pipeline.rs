@@ -39,7 +39,7 @@ mod deserialize {
                     )));
                 }
             };
-            r.push((k, v.into()));
+            r.push((k, v));
         }
         Ok(r)
     }
@@ -115,11 +115,7 @@ pub struct PipelineDesc {
 }
 
 impl PipelineDesc {
-    pub fn compile<F, CP, P>(
-        self: Box<Self>,
-        read_src: &F,
-        compile_and_link_program: &CP,
-    ) -> Result<P, String>
+    pub fn compile<F, CP, P>(self, read_src: &F, compile_and_link_program: &CP) -> Result<P, String>
     where
         F: Fn(&str) -> Result<String, String>,
         CP: Fn(

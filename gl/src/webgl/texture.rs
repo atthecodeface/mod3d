@@ -73,17 +73,19 @@ impl Texture {
         };
         let gl = render_context.create_texture().unwrap();
         render_context.bind_texture(WebGl2RenderingContext::TEXTURE_2D, Some(&gl));
-        render_context.tex_image_2d_with_i32_and_i32_and_i32_and_format_and_type_and_opt_u8_array(
-            WebGl2RenderingContext::TEXTURE_2D,
-            0,
-            WebGl2RenderingContext::RGB as i32,
-            width as i32,
-            height as i32,
-            0,
-            data_format,
-            data_type,
-            Some(texture.data()),
-        );
+        // Do not really know what to do with an error here right now
+        let _ = render_context
+            .tex_image_2d_with_i32_and_i32_and_i32_and_format_and_type_and_opt_u8_array(
+                WebGl2RenderingContext::TEXTURE_2D,
+                0,
+                WebGl2RenderingContext::RGB as i32,
+                width as i32,
+                height as i32,
+                0,
+                data_format,
+                data_type,
+                Some(texture.data()),
+            );
 
         render_context.tex_parameteri(
             WebGl2RenderingContext::TEXTURE_2D,

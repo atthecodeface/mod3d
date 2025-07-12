@@ -9,6 +9,8 @@ use inner::Inner;
 mod model;
 mod objects;
 
+//a Java console logging
+//fp log
 #[wasm_bindgen]
 extern "C" {
     // Use `js_namespace` here to bind `console.log(..)` instead of just
@@ -17,13 +19,17 @@ extern "C" {
     pub fn log(s: &str);
 }
 
+//fp console_log
 #[macro_export]
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
     ($($t:tt)*) => (
-        #[allow(unused_unsafe)]
-        unsafe { $crate::log(&format_args!($($t)*).to_string())}
+        // #[allow(unused_unsafe)]
+        // unsafe {
+            $crate::log(&format_args!($($t)*).to_string()
+            )
+        // }
     )
 }
 
@@ -60,9 +66,10 @@ impl CanvasWebgl {
     pub fn add_file(&mut self, filename: &str, data: JsValue) -> Result<(), JsValue> {
         let data = js_sys::Uint8Array::new(&data);
         let data = data.to_vec();
-        Ok(std::rc::Rc::get_mut(&mut self.inner)
+        std::rc::Rc::get_mut(&mut self.inner)
             .unwrap()
-            .add_file(filename, data))
+            .add_file(filename, data);
+        Ok(())
     }
 
     //mp create_f

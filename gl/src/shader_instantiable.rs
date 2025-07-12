@@ -46,7 +46,6 @@ impl ShaderMaterialBaseData {
             roughness,
             occlusion_factor,
             emissive_factor,
-            ..Default::default()
         }
     }
     pub fn as_slice(&self) -> &[f32] {

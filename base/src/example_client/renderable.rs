@@ -92,11 +92,11 @@ impl Renderable for Id {
     fn init_buffer_view_client(
         &mut self,
         client: &mut Buffer,
-        buffer_view: &BufferDataAccessor<Self>,
+        buffer_data_acc: &BufferDataAccessor<Self>,
         _attr: VertexAttr,
     ) {
-        buffer_view.data.create_client(self);
-        *client = buffer_view.data.borrow_client().clone();
+        buffer_data_acc.desc().data().create_client(self);
+        *client = buffer_data_acc.desc().data().borrow_client().clone();
     }
     fn create_vertices_client(&mut self, _vertices: &Vertices<Self>) -> Self::Vertices {
         Self::Vertices::default()

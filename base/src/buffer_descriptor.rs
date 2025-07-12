@@ -14,7 +14,7 @@ use crate::{BufferData, Renderable, VertexDesc};
 ///
 /// A [BufferDescriptor] is used within a [crate::BufferDataAccessor]
 /// to describe *just* an individual field element.
-pub struct BufferDescriptor<'a, R: Renderable + ?Sized> {
+pub struct BufferDescriptor<'a, R: Renderable> {
     /// The `BufferData` that contains the actual vertex attribute data
     data: &'a BufferData<'a, R>,
 
@@ -28,7 +28,7 @@ pub struct BufferDescriptor<'a, R: Renderable + ?Sized> {
     // index_by_instance: bool,
     /// Stride of data in the buffer
     ///
-    /// If 0, then the maximum of the elements[].byte_offset() + byte_length()
+    /// This is always at least the maximum of the elements[].byte_offset() + byte_length()
     stride: u32,
 
     /// Description of the layout of the elements of the actual portion of buffer data
@@ -67,20 +67,43 @@ where
 //ip BufferDescriptor
 impl<'a, R: Renderable> BufferDescriptor<'a, R> {
     //ap data
+    /// Get a reference to the underlying [BufferData]
     pub fn data(&self) -> &BufferData<'a, R> {
-        &self.data
+        self.data
+    }
+
+    //ap byte_offset
+    /// Get the byte offset within the underlying [BufferData] for
+    /// this descriptor
+    pub fn byte_offset(&self) -> u32 {
+        self.byte_offset
+    }
+
+    //ap stride
+    /// Get the byte stride between different indices for the instances for
+    /// this descriptor
+    pub fn stride(&self) -> u32 {
+        self.stride
+    }
+
+    //ap element
+    /// Get a reference to the n'th element
+    pub fn element(&self, n: usize) -> &VertexDesc {
+        &self.elements[n]
     }
 
     //fp new
     /// Create a new view of a `BufferData`
     pub fn new(
         data: &'a BufferData<'a, R>,
-        byte_offset: u32, // offset in bytes from start of data
-        stride: u32,      /* stride between elements
-                           * (0->count*sizeof(ele_type)) */
+        byte_offset: u32,
+        mut stride: u32,
         elements: Vec<VertexDesc>,
     ) -> Self {
         let rc_client = RefCell::new(R::Descriptor::default());
+        for e in elements.iter() {
+            stride = stride.max(e.byte_offset() as u32 + e.byte_length());
+        }
         Self {
             data,
             byte_offset,

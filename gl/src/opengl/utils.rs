@@ -33,7 +33,7 @@ pub fn check_errors() -> Result<(), Vec<String>> {
                 v.push("Invalid operation (Gl error)".to_string());
             }
             x => {
-                v.push(format!("GL had error {}", x));
+                v.push(format!("GL had error {x}"));
             }
         }
     }

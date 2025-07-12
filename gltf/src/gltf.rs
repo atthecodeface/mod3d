@@ -198,12 +198,11 @@ impl Gltf {
         byte_stride: Option<usize>,
     ) -> ViewIndex {
         let view = GltfBufferView {
-            buffer: buffer,
-            byte_length: byte_length,
-            byte_offset: byte_offset,
-            byte_stride: byte_stride,
-        }
-        .into();
+            buffer,
+            byte_length,
+            byte_offset,
+            byte_stride,
+        };
 
         let n = self.buffer_views.len();
         self.buffer_views.push(view);
@@ -264,8 +263,7 @@ impl Gltf {
             };
             if bv_index.as_usize() >= n {
                 return Err(Error::BadJson(format!(
-                    "Accessor's buffer view index {0} out of range (must be < {n})",
-                    bv_index
+                    "Accessor's buffer view index {bv_index} out of range (must be < {n})",
                 )));
             }
             let bv = &self.buffer_views[bv_index.as_usize()];

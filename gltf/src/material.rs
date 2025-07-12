@@ -9,7 +9,7 @@ use crate::Named;
 use crate::{GltfTextureInfo, MaterialIndex};
 
 //tp GltfPbrMetallicRoughness
-///
+/// A Pbr metallic/roughneess
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -17,19 +17,27 @@ pub struct GltfPbrMetallicRoughness {
     /// Base color factor
     #[cfg_attr(feature = "serde", serde(rename = "baseColorFactor"))]
     pub base_color_factor: Option<Vec<f32>>,
+
+    /// Base color texture
     #[cfg_attr(feature = "serde", serde(rename = "baseColorTexture"))]
     pub base_color_texture: Option<GltfTextureInfo>,
+
+    /// Metallic/roughness texture
     #[cfg_attr(feature = "serde", serde(rename = "metallicRoughnessTexture"))]
     pub metallic_roughness_texture: Option<GltfTextureInfo>,
     #[cfg_attr(
         feature = "serde",
         serde(rename = "metallicFactor", default = "deserialize::f32_one")
     )]
+
+    /// Metallic factor
     pub metallic_factor: f32,
     #[cfg_attr(
         feature = "serde",
         serde(rename = "roughnessFactor", default = "deserialize::f32_one")
     )]
+
+    /// Roughness factor
     pub roughness_factor: f32,
 }
 

@@ -47,13 +47,13 @@ where
 
     //mp of_view
     /// Create the OpenGL ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
-    fn of_view(&mut self, view: &BufferDataAccessor<G>, render_context: &mut G) {
-        view.data.create_client(render_context);
-        self.elements_per_data = view.elements_per_data;
-        self.ele_type = view.ele_type;
-        self.byte_offset = view.byte_offset;
-        self.stride = view.stride;
-        self.gl_buffer = view.data.borrow_client().clone();
+    fn of_view(&mut self, bda: &BufferDataAccessor<G>, render_context: &mut G) {
+        bda.desc().data().create_client(render_context);
+        self.elements_per_data = bda.count();
+        self.ele_type = bda.ele_type();
+        self.byte_offset = bda.desc().byte_offset();
+        self.stride = bda.desc().stride();
+        self.gl_buffer = bda.desc().data().borrow_client().clone();
     }
 
     //fp bind_to_vao_attr
@@ -199,12 +199,9 @@ where
     fn of_view(view: &BufferIndexAccessor<G>, render_context: &mut G) -> Self {
         let mut gl_buffer = <G as Gl>::Buffer::default();
         render_context.init_buffer_of_indices(&mut gl_buffer, view);
-        let count = view.number_indices;
-        let ele_type = view.ele_type;
-        println!(
-            "Create indices buffer {} of view {:?}#{}",
-            gl_buffer, ele_type, count
-        );
+        let count = view.number_indices();
+        let ele_type = view.ele_type();
+        // eprintln!("Create indices buffer {gl_buffer} of view {ele_type:?}#{count}");
         Self {
             gl_buffer,
             count,
@@ -316,7 +313,7 @@ where
     pub fn init_buffer_view_client(
         &mut self,
         buffer_view: &BufferDataAccessor<G>,
-        attr: VertexAttr,
+        _attr: VertexAttr,
         renderer: &mut G,
     ) {
         match self {

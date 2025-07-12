@@ -25,7 +25,7 @@ impl Shader {
         };
         let shader = context
             .create_shader(shader_type)
-            .ok_or_else(|| format!("Unable to create {} shader object", shader_kind))?;
+            .ok_or_else(|| format!("Unable to create {shader_kind} shader object"))?;
         context.shader_source(&shader, source);
         context.compile_shader(&shader);
 
@@ -38,7 +38,7 @@ impl Shader {
         } else {
             Err(context
                 .get_shader_info_log(&shader)
-                .unwrap_or_else(|| format!("Unknown error compiling {} shader", shader_kind)))
+                .unwrap_or_else(|| format!("Unknown error compiling {shader_kind} shader")))
         }
     }
 }

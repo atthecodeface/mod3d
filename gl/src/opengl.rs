@@ -157,10 +157,7 @@ impl Gl for Model3DOpenGL {
     ) -> Result<(), ()> {
         if let Some(u) = program.uniform(crate::UniformId::Buffer(uniform_buffer_id as u8)) {
             unsafe {
-                println!(
-                    "Bind program uniform buffer {} to the binding point {}",
-                    u, gl_uindex
-                );
+                println!("Bind program uniform buffer {u} to the binding point {gl_uindex}");
                 gl::UniformBlockBinding(program.id(), u as u32, gl_uindex);
             }
             utils::check_errors().expect("Bound uniform");
@@ -180,7 +177,7 @@ impl Gl for Model3DOpenGL {
             unsafe {
                 gl::ActiveTexture(gl::TEXTURE0 + unit);
                 gl::BindTexture(gl::TEXTURE_2D, gl_texture.gl_texture());
-                gl::Uniform1i(u as i32, unit as i32);
+                gl::Uniform1i(u, unit as i32);
             }
         }
     }

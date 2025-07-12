@@ -1,25 +1,32 @@
 //a Imports
 use std::cell::RefCell;
-use std::rc::Rc;
-
 use std::collections::HashMap;
+use std::pin::Pin;
+use std::rc::Rc;
 
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
-use web_sys::{WebGl2RenderingContext, WebGlVertexArrayObject};
+use web_sys::WebGl2RenderingContext;
 
-use mod3d_gl::Gl;
-use mod3d_gl::{GlProgram, Model3DWebGL};
-type Program = <Model3DWebGL as mod3d_gl::Gl>::Program;
+use mod3d_gl::Model3DWebGL;
 
 // use crate::shader;
 
 //a Inner (and ClosureSet)
 //ti F
 struct F {
-    base: Box<crate::model::Base<Model3DWebGL>>,
+    /// base is pinned so that instantiable and instances can refer to
+    /// its buffer contents
+    base: Pin<Box<crate::model::Base<Model3DWebGL>>>,
+
+    /// instantiable *must not* leak outside of F without breaking safety
     instantiable: crate::model::Instantiable<'static, Model3DWebGL>,
+
+    /// instances *must not* leak outside of F without breaking
+    /// safety, as it refers to base
     instances: RefCell<crate::model::Instances<'static, Model3DWebGL>>,
+
+    /// State of the model
     game_state: RefCell<crate::model::GameState>,
 }
 
@@ -32,7 +39,7 @@ pub struct Inner {
     /// when this module used event listeners
     #[allow(dead_code)]
     canvas: HtmlCanvasElement,
-    model3d: mod3d_gl::Model3DWebGL,
+    model3d: Model3DWebGL,
     files: HashMap<String, Vec<u8>>,
     f: Option<F>,
 }
@@ -95,8 +102,8 @@ impl Inner {
             .get(shader_filename)
             .ok_or_else(|| format!("Failed to find shader file {shader_filename}"))?;
         let shader = std::str::from_utf8(shader).map_err(|_| "Bad UTF8 for shader".to_string())?;
-        let shader_program_desc: mod3d_gl::PipelineDesc = serde_json::from_str(&shader)
-            .map_err(|e| format!("Failed to parse shader desc {e}"))?;
+        let shader_program_desc: mod3d_gl::PipelineDesc =
+            serde_json::from_str(shader).map_err(|e| format!("Failed to parse shader desc {e}"))?;
 
         let m = Box::new(crate::model::Base::new(
             &mut self.model3d,
@@ -105,10 +112,21 @@ impl Inner {
             glb,
             node_names,
         )?);
+        let m = Box::into_pin(m);
 
         let f = {
-            let m_ref =
-                unsafe { std::mem::transmute::<_, &'static crate::model::Base<Model3DWebGL>>(&*m) };
+            // # Safety
+            //
+            // m is pinned and stored in F; m therefore lives as long as F
+            //
+            // Other items within F can safely refer to m, provided
+            // they cannot be extracted from F.
+            let m_ref = unsafe {
+                std::mem::transmute::<
+                    &crate::model::Base<Model3DWebGL>,
+                    &'static crate::model::Base<Model3DWebGL>,
+                >(&*m)
+            };
             let instantiable = m_ref.make_instantiable(&mut self.model3d)?;
             let instances = m_ref.make_instances().into();
             let game_state = crate::model::GameState::new(scale).into();

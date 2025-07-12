@@ -112,8 +112,7 @@ impl Program {
                 |id, len, buf| unsafe { gl::GetProgramInfoLog(id, len, std::ptr::null_mut(), buf) },
             );
             Err(format!(
-                "Unable to create shader program, linking error {}",
-                err
+                "Unable to create shader program, linking error {err}"
             ))?;
         }
         utils::check_errors().expect("Linked");
@@ -140,7 +139,7 @@ impl Program {
         let name_c = CString::new(name).unwrap();
         let attr_index = unsafe { gl::GetAttribLocation(self.id, name_c.as_ptr()) };
         if attr_index < 0 {
-            Err(format!("Unable to find attribute {} in program", name))
+            Err(format!("Unable to find attribute {name} in program"))
         } else {
             self.attributes
                 .push((attr_index as gl::types::GLuint, vertex_attr));
@@ -158,7 +157,7 @@ impl Program {
         let name_c = CString::new(name).unwrap();
         let uniform_index = unsafe { gl::GetUniformLocation(self.id, name_c.as_ptr()) };
         if uniform_index == (gl::INVALID_INDEX as i32) {
-            Err(format!("Unable to find uniform {} in program", name))
+            Err(format!("Unable to find uniform {name} in program"))
         } else {
             self.uniforms
                 .push((uniform_index as gl::types::GLint, uniform_id));
@@ -173,7 +172,7 @@ impl Program {
         let name_c = CString::new(name).unwrap();
         let uniform_index = unsafe { gl::GetUniformBlockIndex(self.id, name_c.as_ptr()) };
         if uniform_index == gl::INVALID_INDEX {
-            Err(format!("Unable to find uniform block {} in program", name))
+            Err(format!("Unable to find uniform block {name} in program"))
         } else {
             self.uniforms.push((
                 uniform_index as gl::types::GLint,
@@ -196,7 +195,7 @@ impl Program {
         let name_c = CString::new(name).unwrap();
         let uniform_index = unsafe { gl::GetUniformLocation(self.id, name_c.as_ptr()) };
         if uniform_index == (gl::INVALID_INDEX as i32) {
-            Err(format!("Unable to find texture {} in program", name))
+            Err(format!("Unable to find texture {name} in program"))
         } else {
             let gl_unit = unit as u32;
             self.textures

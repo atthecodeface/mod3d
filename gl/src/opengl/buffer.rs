@@ -80,12 +80,16 @@ impl Buffer {
     pub fn of_indices(&mut self, view: &mod3d_base::BufferIndexAccessor<Model3DOpenGL>) {
         assert!(self.is_none());
         let mut gl: gl::types::GLuint = 0;
-        let byte_length = view.number_indices as usize * view.ele_type.byte_length();
+        let byte_length = view.number_indices() as usize * view.ele_type().byte_length() as usize;
         unsafe {
             // stops the indices messing up other VAO
             gl::BindVertexArray(0);
-            let buffer = view.data.as_ref().as_ptr().add(view.byte_offset as usize);
-            eprintln!("of_indices {0:?} {1} {2:?}", buffer, byte_length, view);
+            let buffer = view
+                .data()
+                .as_ref()
+                .as_ptr()
+                .add(view.byte_offset() as usize);
+            eprintln!("of_indices {buffer:?} {byte_length} {view:?}");
             gl::GenBuffers(1, (&mut gl) as *mut gl::types::GLuint);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, gl);
             gl::BufferData(

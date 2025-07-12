@@ -149,7 +149,7 @@ where
 }
 
 //ip Display for BufferData
-impl<'a, R: Renderable + ?Sized> std::fmt::Display for BufferData<'a, R> {
+impl<'a, R: Renderable> std::fmt::Display for BufferData<'a, R> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let data_ptr = self.data.as_ptr();
         write!(
@@ -164,4 +164,4 @@ impl<'a, R: Renderable + ?Sized> std::fmt::Display for BufferData<'a, R> {
 }
 
 //ip DefaultIndentedDisplay for BufferData
-impl<'a, R: Renderable + ?Sized> indent_display::DefaultIndentedDisplay for BufferData<'a, R> {}
+impl<'a, R: Renderable> indent_display::DefaultIndentedDisplay for BufferData<'a, R> {}

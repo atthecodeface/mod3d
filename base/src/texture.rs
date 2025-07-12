@@ -17,7 +17,7 @@ use crate::{BufferElementType, Renderable};
 /// the client, when a texture client handle is created by the client;
 /// this must be easily Cloned, particuarly if the texture is used in
 /// more than one instantiable object
-pub struct Texture<'texture, R: Renderable + ?Sized> {
+pub struct Texture<'texture, R: Renderable> {
     /// The underlying data for the texture
     pub data: &'texture [u8],
     /// Width, height, and depth of the texture - width must be

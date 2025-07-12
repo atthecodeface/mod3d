@@ -28,7 +28,9 @@ pub struct Base<G: Gl> {
     /// The shader programs
     shader_program: G::Program,
     /// Uniform buffers
+    #[allow(dead_code)]
     material_gl: UniformBuffer<G>,
+    /// World
     world_gl: UniformBuffer<G>,
 }
 
@@ -65,7 +67,7 @@ impl<G: Gl> Base<G> {
         fn read_file(files: &HashMap<String, Vec<u8>>, filename: &str) -> Result<String, String> {
             if let Some(data) = files.get(filename) {
                 Ok(std::str::from_utf8(data)
-                    .map_err(|e| format!("Failed to read shader program {filename}: {}", e))?
+                    .map_err(|e| format!("Failed to read shader program {filename}: {e}"))?
                     .to_string())
             } else {
                 Err(format!("Failed to find shader program {filename}"))
@@ -84,7 +86,7 @@ impl<G: Gl> Base<G> {
         // gl.program_bind_uniform_index(&shader_program, 1, material_uid)
         // .map_err(|_| "Could not bind uniform for material".to_string())?;
 
-        let mut world_data = [WorldData::default(); 1];
+        let world_data = [WorldData::default(); 1];
 
         let world_gl = gl
             .uniform_buffer_create(&world_data, true)
@@ -157,6 +159,7 @@ impl<G: Gl> Base<G> {
 pub struct GameState {
     world_data: [WorldData; 1],
     time: f32,
+    #[allow(dead_code)]
     view_transformation: mod3d_base::Transformation,
     spin: mod3d_base::Quat,
 }

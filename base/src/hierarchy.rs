@@ -451,7 +451,7 @@ where
             let se = self.stack.pop().unwrap();
             // Track the state for debugging
             if DEBUG_ITERATOR {
-                println!("{:?}", se);
+                println!("{se:?}");
             }
             match se {
                 NodeEnumState::PreNode(x) => {

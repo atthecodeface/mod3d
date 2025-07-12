@@ -7,14 +7,14 @@
 
 Changed to SInt and UInt in ele type
 
-Added BufferDescriptor
+Added BufferDescriptor, using in BufferDataAccessor
 
 # TODO
 
 Decided not to replace ByteBuffer with T:AsRef<[u8]>; this would
 require clients to still cast Vec<> etc to a something-of-u8
 
-Need to make BufferDataAccessor refer to a BufferDescriptor
+Need to make BufferDataAccessor use a *reference* to BufferDescriptor
 
 Need to add BufferIndexAccessor
 
@@ -357,7 +357,7 @@ A 3D model [Object] consists of:
 *  a [Skeleton]
 
 *  an array of [Vertices]; each of these is a set
-of indices within a [BufferData] and attribute [BufferAccessor]s.
+   of indices within a [BufferData] and attribute [BufferAccessor]s.
 
 *  an array of [Material]
 

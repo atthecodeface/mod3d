@@ -11,17 +11,21 @@ use crate::{BufferData, BufferElementType, Renderable};
 ///
 /// A `BufferIndexAccessor` is used for a single attribute of a set of data, such as
 /// Position or Normal.
-pub struct BufferIndexAccessor<'a, R: Renderable + ?Sized> {
+pub struct BufferIndexAccessor<'a, R: Renderable> {
     /// The `BufferData` that contains the actual index data
-    pub data: &'a BufferData<'a, R>,
+    data: &'a BufferData<'a, R>,
+
     /// Number of indices in the buffer
-    pub number_indices: u32,
+    number_indices: u32,
+
     /// The type of each element
     ///
     /// For indices this must be UInt8, UInt16 or UInt32
-    pub ele_type: BufferElementType,
+    ele_type: BufferElementType,
+
     /// Offset from start of buffer to first byte of data
-    pub byte_offset: u32,
+    byte_offset: u32,
+
     /// The client bound to data\[byte_offset\] .. + byte_length
     ///
     /// This must be held as a [RefCell] as the [BufferData] is
@@ -51,6 +55,32 @@ where
 
 //ip BufferIndexAccessor
 impl<'a, R: Renderable> BufferIndexAccessor<'a, R> {
+    //ap data
+    /// Get a reference to the underlying [BufferData]
+    pub fn data(&self) -> &BufferData<'a, R> {
+        self.data
+    }
+
+    //ap number_indices
+    /// Number of indices in the buffer
+    pub fn number_indices(&self) -> u32 {
+        self.number_indices
+    }
+
+    //ap ele_type
+    /// The type of each element
+    ///
+    /// For indices this must be UInt8, UInt16 or UInt32
+    pub fn ele_type(&self) -> BufferElementType {
+        self.ele_type
+    }
+
+    //ap byte_offset
+    /// Offset from start of buffer to first byte of data
+    pub fn byte_offset(&self) -> u32 {
+        self.byte_offset
+    }
+
     //fp new
     /// Create a new index accessor of a `BufferData`
     pub fn new(

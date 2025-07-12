@@ -1,3 +1,4 @@
+//a Imports
 use crate::{BufferData, BufferDataAccessor, BufferIndexAccessor, Texture, VertexAttr, Vertices};
 use crate::{BufferDescriptor, MaterialAspect, MaterialBaseData, ShortIndex};
 
@@ -116,6 +117,7 @@ pub trait Renderable: Sized {
         &mut self,
         client: &mut Self::DataAccessor,
         buffer_view: &BufferDataAccessor<Self>,
+        // Lose this argument as it is now in BufferDataAccessor
         attr: VertexAttr,
     );
     /// Create a client
@@ -144,7 +146,7 @@ pub trait Renderable: Sized {
 /// of a material to be provided to it for rendering, and this API
 /// allows that information to be gathered from any kind of material
 pub trait Material: std::fmt::Debug {
-    /// Invoked when an 3D model object is made renderable
+    // Invoked when an 3D model object is made renderable
     // fn create_renderable(&self, _render_context: &mut R::Context) {}
 
     /// Borrow the basic data of a material - color and base

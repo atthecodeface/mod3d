@@ -405,7 +405,7 @@ impl ObjectData {
     where
         B: ByteBuffer + ?Sized + 'buffers,
         F: Fn(usize) -> &'buffers B,
-        R: Renderable + ?Sized,
+        R: Renderable,
     {
         let mut buffer_data = vec![];
         for i in 0..self.buffer_usage.len() {
@@ -475,7 +475,7 @@ impl ObjectData {
     ) -> BufferIndexAccessor<'buffers, R>
     where
         F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
-        R: Renderable + ?Sized,
+        R: Renderable,
     {
         let ba = &gltf[acc];
         let bv = ba.buffer_view().unwrap();
@@ -498,7 +498,7 @@ impl ObjectData {
     ) -> BufferDataAccessor<'buffers, R>
     where
         F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
-        R: Renderable + ?Sized,
+        R: Renderable,
     {
         let ba = &gltf[acc];
         let bv = ba.buffer_view().unwrap();
@@ -535,7 +535,7 @@ impl ObjectData {
     )
     where
         F: Fn(usize) -> &'buffers BufferData<'buffers, R>,
-        R: Renderable + ?Sized,
+        R: Renderable,
     {
         let mut buffer_index_accessors = vec![];
         let mut buffer_data_accessors = vec![];
@@ -579,7 +579,7 @@ impl ObjectData {
     where
         F: Fn(usize) -> &'vertices BufferIndexAccessor<'vertices, R>,
         G: Fn(usize) -> &'vertices BufferDataAccessor<'vertices, R>,
-        R: Renderable + ?Sized,
+        R: Renderable,
     {
         let mut vertices = vec![];
         for i in 0..self.meshes.len() {
@@ -641,7 +641,7 @@ impl ObjectData {
         F: Fn(usize) -> &'textures I,
         I: 'textures,
         T: Fn(&'textures I) -> mod3d_base::Texture<'textures, R>,
-        R: Renderable + ?Sized,
+        R: Renderable,
     {
         let mut textures = vec![];
         for (ti, texture_use) in self.textures_used.iter_mut_required() {
@@ -728,7 +728,7 @@ impl ObjectData {
     ) -> mod3d_base::Object<'object, M, R>
     where
         M: mod3d_base::Material + 'object,
-        R: Renderable + ?Sized,
+        R: Renderable,
     {
         let mut object = mod3d_base::Object::new();
         for v in vertices {

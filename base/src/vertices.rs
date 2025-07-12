@@ -30,7 +30,7 @@ use crate::{Renderable, VertexAttr};
 ///
 /// FIXME - change to using VertexDesc instead of VeretxAttr?
 #[derive(Debug)]
-pub struct Vertices<'vertices, R: Renderable + ?Sized> {
+pub struct Vertices<'vertices, R: Renderable> {
     /// Indices related to primitives that use these vertices; if none
     /// then a draw call is not indexed but uses a range of elements
     indices: Option<&'vertices BufferIndexAccessor<'vertices, R>>,
@@ -122,7 +122,9 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
     //mp create_client
     /// Create the render buffer required by the BufferAccessor
     pub fn create_client(&self, renderer: &mut R) {
-        self.indices.map(|i| i.create_client(renderer));
+        if let Some(i) = self.indices {
+            i.create_client(renderer)
+        }
         for (attr, view) in self.iter_attrs() {
             view.create_client(*attr, renderer);
         }

@@ -35,7 +35,7 @@ impl Vao {
             gl::GenVertexArrays(1, &mut gl_vao);
             gl::BindVertexArray(gl_vao);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, indices.gl_buffer().gl_buffer());
-            println!("VAO {} {:?}", gl_vao, indices);
+            println!("VAO {gl_vao} {indices:?}");
         }
         utils::check_errors().expect("Added indices to VAO");
         let index_type = {

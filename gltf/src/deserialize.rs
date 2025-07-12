@@ -1,7 +1,6 @@
 //a Imports
 use std::collections::HashMap;
 
-use serde;
 use serde::{Deserialize, Deserializer};
 
 use crate::AccessorIndex;
