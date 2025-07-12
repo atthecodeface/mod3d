@@ -308,18 +308,17 @@ where
         *self = BufferView::IndexBuffer(index_buffer);
     }
 
-    //mp init_buffer_view_client
+    //mp init_data_accessor_client
     /// Create the OpenGL ARRAY_BUFFER buffer using STATIC_DRAW - this copies the data in to OpenGL
-    pub fn init_buffer_view_client(
+    pub fn init_data_accessor_client(
         &mut self,
-        buffer_view: &BufferDataAccessor<G>,
-        _attr: VertexAttr,
+        buffer_data_accessor: &BufferDataAccessor<G>,
         renderer: &mut G,
     ) {
         match self {
             BufferView::IndexBuffer(_) => panic!("Vertex buffer is already an index buffer"),
             BufferView::VertexBuffer(vb) => {
-                vb.of_view(buffer_view, renderer);
+                vb.of_view(buffer_data_accessor, renderer);
             }
         }
     }

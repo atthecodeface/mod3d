@@ -316,15 +316,14 @@ impl mod3d_base::Renderable for Model3DWebGL {
         client.init_index_accessor_client(buffer_view, self);
     }
 
-    //mp init_buffer_view_client
-    /// Initialize a buffer view client
-    fn init_buffer_view_client(
+    //mp init_data_accessor_client
+    /// Initialize the client side of a BufferDataAccessor (for a particular vertex attr)
+    fn init_data_accessor_client(
         &mut self,
         client: &mut Self::DataAccessor,
-        buffer_view: &mod3d_base::BufferDataAccessor<Self>,
-        attr: mod3d_base::VertexAttr,
+        buffer_data_accessor: &mod3d_base::BufferDataAccessor<Self>,
     ) {
-        client.init_buffer_view_client(buffer_view, attr, self);
+        client.init_data_accessor_client(buffer_data_accessor, self);
     }
 
     //mp create_vertices_client

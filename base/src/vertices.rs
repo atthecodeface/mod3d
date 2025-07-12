@@ -29,6 +29,7 @@ use crate::{Renderable, VertexAttr};
 /// appropriate render options (uniforms in OpenGL)
 ///
 /// FIXME - change to using VertexDesc instead of VeretxAttr?
+///       - this requires removing VertexAttr from here and using that in its BufferDataAccessor
 #[derive(Debug)]
 pub struct Vertices<'vertices, R: Renderable> {
     /// Indices related to primitives that use these vertices; if none
@@ -100,7 +101,7 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
     }
 
     //mp borrow_attr
-    /// Borrow an attribute [BufferAccessor] if the [Vertices] has one
+    /// Borrow an attribute [BufferDataAccessor] if the [Vertices] has one
     pub fn borrow_attr<'a>(
         &'a self,
         attr: VertexAttr,
@@ -125,8 +126,8 @@ impl<'vertices, R: Renderable> Vertices<'vertices, R> {
         if let Some(i) = self.indices {
             i.create_client(renderer)
         }
-        for (attr, view) in self.iter_attrs() {
-            view.create_client(*attr, renderer);
+        for (_attr, data_accessor) in self.iter_attrs() {
+            data_accessor.create_client(renderer);
         }
         *(self.rc_client.borrow_mut()) = renderer.create_vertices_client(self);
     }

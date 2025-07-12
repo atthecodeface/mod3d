@@ -15,7 +15,7 @@ use std::rc::Rc;
 /// duplicates - the reference count should ont be changed either as
 /// it is the *same* BufferData instance that is invoking the creation
 ///
-/// For indices a buffer is created for the [mod3d_base::BufferAccessor], as
+/// For indices a buffer is created for the [mod3d_base::BufferIndexAccessor], as
 /// the buffer in this case must be an OpenGL ELEMENT_ARRAY_BUFFER;
 /// this could perhaps be optimized to reduce the number of OpenGL
 /// buffers with much more code.

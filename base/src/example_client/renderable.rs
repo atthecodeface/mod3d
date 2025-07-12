@@ -80,7 +80,9 @@ impl Renderable for Id {
         _buffer_view: &BufferIndexAccessor<Self>,
     ) {
     }
+
     fn init_buffer_data_client(&mut self, _buffer: &mut Buffer, _data: &BufferData<Self>) {}
+
     fn init_buffer_desc_client(
         &mut self,
         client: &mut Self::Descriptor,
@@ -89,21 +91,24 @@ impl Renderable for Id {
         buffer_desc.data().create_client(self);
         *client = buffer_desc.data().borrow_client().clone();
     }
-    fn init_buffer_view_client(
+
+    fn init_data_accessor_client(
         &mut self,
         client: &mut Buffer,
         buffer_data_acc: &BufferDataAccessor<Self>,
-        _attr: VertexAttr,
     ) {
         buffer_data_acc.desc().data().create_client(self);
         *client = buffer_data_acc.desc().data().borrow_client().clone();
     }
+
     fn create_vertices_client(&mut self, _vertices: &Vertices<Self>) -> Self::Vertices {
         Self::Vertices::default()
     }
+
     fn create_texture_client(&mut self, _vertices: &Texture<Self>) -> Self::Texture {
         Self::Texture::default()
     }
+
     fn create_material_client<M>(
         &mut self,
         _object: &crate::Object<M, Self>,

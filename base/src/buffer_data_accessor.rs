@@ -55,9 +55,9 @@ impl<'a, R: Renderable> BufferDataAccessor<'a, R> {
 
     //mp create_client
     /// Create the render buffer required by the BufferDataAccessor
-    pub fn create_client(&self, attr: VertexAttr, renderable: &mut R) {
+    pub fn create_client(&self, renderable: &mut R) {
         use std::ops::DerefMut;
-        renderable.init_buffer_view_client(self.rc_client.borrow_mut().deref_mut(), self, attr);
+        renderable.init_data_accessor_client(self.rc_client.borrow_mut().deref_mut(), self);
     }
 
     //ap borrow_client

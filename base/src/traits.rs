@@ -75,55 +75,65 @@ pub trait VerticesClient: Sized + std::fmt::Debug + std::default::Default + Clon
 pub trait Renderable: Sized {
     /// The renderer's type that reflects a [BufferData]
     type Buffer: BufferClient;
+
     /// The renderer's type that reflects a [BufferDataAccessor]
     type DataAccessor: AccessorClient;
+
     /// The renderer's type that reflects a [BufferIndexAccessor]
     type IndexAccessor: AccessorClient;
+
     /// The renderer's type that reflects a [BufferDescriptor]
     type Descriptor: DescriptorClient;
+
     /// The renderer's type that represents a texture; this is
     /// supplied to material creation, and hence is less a product of
     /// the renderer and more an input to the 3D model library
     type Texture: TextureClient;
+
     /// The renderer's type that reflects a [Material]; this is expected
     /// to be an extraction of the aspects of a material that the
     /// renderer pipelines can apply.
     type Material: MaterialClient;
+
     /// The renderer's type that reflects a [BufferAccessor] of indices
     /// and the associated [BufferAccessor]s of attributes supported by a
     /// particular pipeline within the renderer
     type Vertices: VerticesClient;
+
     /// Initialize a buffer descriptor client - it will have been created using default()
     fn init_buffer_desc_client(
         &mut self,
         client: &mut Self::Descriptor,
         buffer_desc: &BufferDescriptor<Self>,
     );
-    // type Instantiable : ;
+
     /// Initialize a buffer data client - it will have been created using default()
     fn init_buffer_data_client(
         &mut self,
         client: &mut Self::Buffer,
         buffer_data: &BufferData<Self>,
     );
+
     /// Initialize the client of an index accessor of a buffer data
     fn init_index_accessor_client(
         &mut self,
         client: &mut Self::IndexAccessor,
         buffer_view: &BufferIndexAccessor<Self>,
     );
+
     /// Initialize the client of a data accessor of a buffer data
-    fn init_buffer_view_client(
+    fn init_data_accessor_client(
         &mut self,
         client: &mut Self::DataAccessor,
         buffer_view: &BufferDataAccessor<Self>,
-        // Lose this argument as it is now in BufferDataAccessor
-        attr: VertexAttr,
     );
+
     /// Create a client
     fn create_vertices_client(&mut self, vertices: &Vertices<Self>) -> Self::Vertices;
+
     /// Create a client
     fn create_texture_client(&mut self, texture: &Texture<Self>) -> Self::Texture;
+
     /// Create a client
     fn create_material_client<M>(
         &mut self,

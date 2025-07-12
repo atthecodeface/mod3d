@@ -320,15 +320,14 @@ impl mod3d_base::Renderable for Model3DOpenGL {
         client.init_index_accessor_client(buffer_view, self);
     }
 
-    //mp init_buffer_view_client
-    /// Initialize a buffer view client
-    fn init_buffer_view_client(
+    //mp init_data_accessor_client
+    /// Initialize the client side of a BufferDataAccessor (for a particular vertex attr)
+    fn init_data_accessor_client(
         &mut self,
         client: &mut Self::DataAccessor,
-        buffer_view: &BufferDataAccessor<Self>,
-        attr: VertexAttr,
+        buffer_data_accessor: &BufferDataAccessor<Self>,
     ) {
-        client.init_buffer_view_client(buffer_view, attr, self);
+        client.init_data_accessor_client(buffer_data_accessor, self);
     }
 
     //mp create_vertices_client
