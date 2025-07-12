@@ -9,28 +9,39 @@ use crate::{ByteBuffer, Renderable};
 /// or vertex coordinates etc.
 ///
 /// A data buffer may contain a lot of data per vertex, such as
-/// position, normal, tangent, color etc.  a `BufferView` on the data is
+/// position, normal, tangent, color etc.  a GPU `BufferView` on the data is
 /// then a subset of this data - perhaps picking out just the
 /// position, for example, for a set of vertices
 ///
 /// The data buffer may, indeed, contain data for more than one object
-/// - and the objects may have different data per vertex. The data
-/// buffer is pretty free-form, it is a `BufferView` on the [BufferData] which
-/// identifies the object it applies to, and the vertex attributes
-/// required.
+/// - and the objects may have different data per vertex.
 ///
-/// A data buffer may then be used by many `BufferView`s. Each `BufferView` may be
-/// used by many primitives for a single model; alternatively,
-/// primitives may have their own individual `BufferViews`.
+/// A data buffer may then be used by many GPU `BufferView`s. Each
+/// `BufferView` may be used by many primitives for a single model;
+/// alternatively, primitives may have their own individual
+/// `BufferViews`.
 ///
-/// A client may have one copy of the data for all the primitives and models.
+/// To allow a [Renderable] to use the [BufferData] for multiple
+/// views, it supports a 'client' field that can be initialized using
+/// the 'init_buffer_data_client' method of the Renderable, and then
+/// borrowed as required during render programming.
 pub struct BufferData<'a, R: Renderable> {
     /// Data buffer itself
     data: &'a [u8],
-    /// Offset in to the data buffer for the first byte
-    pub byte_offset: u32,
+
+    ///
+    /// byte_offset..(byte_offset+byte_length) is guaranteed to be within the data field
+    ///
+    /// This value cannot be public without breaking the validity
+    byte_offset: u32,
+
     /// Length of data used in the buffer
-    pub byte_length: u32,
+    ///
+    /// byte_offset..(byte_offset+byte_length) is guaranteed to be within the data field
+    ///
+    /// This value cannot be public without breaking the validity
+    byte_length: u32,
+
     /// The client bound to data\[byte_offset\] .. + byte_length
     ///
     /// This must be held as a [RefCell] as the [BufferData] is
@@ -64,6 +75,20 @@ impl<'a, R: Renderable> std::fmt::Debug for BufferData<'a, R> {
 
 //ip BufferData
 impl<'a, R: Renderable> BufferData<'a, R> {
+    //ap byte_length
+    /// Get the byte length of the [BufferData]
+    #[inline]
+    pub fn byte_length(&self) -> u32 {
+        self.byte_length
+    }
+
+    //ap byte_offset
+    /// Get the byte offset within the underlying data of the [BufferData]
+    #[inline]
+    pub fn byte_offset(&self) -> u32 {
+        self.byte_offset
+    }
+
     //fp new
     /// Create a new [BufferData] given a buffer, offset and length; if the
     /// length is zero then the whole of the data buffer post offset
@@ -103,26 +128,24 @@ impl<'a, R: Renderable> BufferData<'a, R> {
     }
 
     //ap borrow_client
-    /// Borrow the client
+    /// Borrow the client immutably
     pub fn borrow_client(&self) -> std::cell::Ref<R::Buffer> {
         self.rc_client.borrow()
     }
 
-    //mp as_ptr
-    /// Get a const u8 ptr to the data itself
-    pub fn as_ptr(&self) -> *const u8 {
-        unsafe { self.data.as_ptr().add(self.byte_offset as usize) }
-    }
+    //zz All done
+}
 
-    //mp as_slice
-    /// Get the slice that is the data itself
-    pub fn as_slice(&self) -> &[u8] {
+//ip AsRef<[u8]> for BufferData
+impl<'a, R> AsRef<[u8]> for BufferData<'a, R>
+where
+    R: Renderable,
+{
+    fn as_ref(&self) -> &[u8] {
         let start = self.byte_offset as usize;
         let end = (self.byte_offset + self.byte_length) as usize;
-        self.data.get(start..end).unwrap()
+        &self.data[start..end]
     }
-
-    //zz All done
 }
 
 //ip Display for BufferData

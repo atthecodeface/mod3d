@@ -26,7 +26,7 @@ pub struct BufferDescriptor<'a, R: Renderable + ?Sized> {
     ///
     /// This must be held as a [RefCell] as the [BufferData] is
     /// created early in the process, prior to any `BufferDescriptor`s using
-    /// it - which then have shared references to the daata - but the
+    /// it - which then have shared references to the data - but the
     /// client is created afterwards
     rc_client: RefCell<R::Descriptor>,
 }

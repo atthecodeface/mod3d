@@ -120,11 +120,11 @@ a game, and the objects all refer to the same buffers and even
 
 Underlying the data model is the [ByteBuffer] trait - any data that is
 used for the models must support this trait, and implementations are
-provided for slice <> and for Vec<>.
+provided for slices and for Vec.
 
 ### [BufferData]
 
-A type that borrows a sub slice of[u8], using an explicit offset and
+A type that borrows a sub slice of [u8], using an explicit offset and
 length, and which might have a client reference (e.g. an OpenGL
 GlBuffer handle). It is similar to a Gltf BufferView, without a
 'stride'.
