@@ -8,20 +8,28 @@ use crate::{BufferData, Renderable, VertexDesc};
 /// A descriptor of a subset of a `BufferData`, used for vertex attributes;
 /// hence for use in a vertex attribute pointer.
 ///
-/// A `BufferDescriptor` is used for a single attribute of a set of data, such as
-/// Position or Normal.
+/// A [BufferDescriptor] allows portion of a [BufferData] to contain
+/// an array of structs with multiple fields for, e.g., Vertex, Normal
+/// and Color.
+///
+/// A [BufferDescriptor] is used within a [crate::BufferDataAccessor]
+/// to describe *just* an individual field element.
 pub struct BufferDescriptor<'a, R: Renderable + ?Sized> {
     /// The `BufferData` that contains the actual vertex attribute data
     pub data: &'a BufferData<'a, R>,
+
     /// Stride of data in the buffer - 0 for count*sizeof(ele_type)
     /// Unused for indices
     pub stride: u32,
+
     /// Byte offset to first data inside 'data'
     pub byte_offset: u32,
+
     /// Description of the layout of the elements of the actual portion of buffer data
     ///
     /// This could become a reference to a struct that is borrowed here, with its own client ref
     pub elements: Vec<VertexDesc>,
+
     /// The client bound to data\[byte_offset\] .. + byte_length
     ///
     /// This must be held as a [RefCell] as the [BufferData] is

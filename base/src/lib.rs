@@ -132,9 +132,18 @@ GlBuffer handle). It is similar to a Gltf BufferView, without a
 The base concept for model [BufferData] is that it is an immutable
 borrow of a portion of some model data buffer of a type that supports
 the [ByteBuffer] trait; the data internally may be floats, ints, etc,
-or combinations thereof - from which one creates [BufferDataAccessor]s, or
-[BufferIndexAccessor]s when used as model indices. So it can be the complete
-data for a whole set of models.
+or combinations thereof.
+
+A portion of a [BufferData] can be intepreted by a [BufferDescriptor],
+which effectively describes an array of structures within that portion
+of the [BufferData].
+
+A [BufferDataAccessor] can then use a [BufferDescriptor] to provide
+access to a array of values for *single* field in a data structure
+held in the underlying [BufferData].
+
+A portion of a [BufferData] can also be intepreted by directly a [BufferIndexAccessor],
+which effectively describes an array of indices used to access arrays of [BufferDataAccessor] within a render pipeline.
 
 Each [BufferData] has a related client element (a
 [Renderable::Buffer]) which is created when an [Object] has its

@@ -111,13 +111,21 @@ impl BufferElementType {
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct VertexDesc {
+    /// Vertex attribute that this describes, e.g. Position, TexCoordsN, Joints
     attr: VertexAttr,
+
+    /// Byte offset within the parent to the first element
     byte_offset: u16,
+
+    /// Dimensions, e.g. [0, 0] for a scalar, [3,0] for a Vec3, [4,4] for a Mat4
     dims: [u8; 2],
+
+    /// Type of each element, e.g. Float32, SInt16, UInt8
     ele_type: BufferElementType,
 }
 
-//a Drawing
+//a Drawing - VertexAttr, PrimitiveType, MaterialAspect, etc
+//tp VertexAttr
 /// A [VertexAttr] is a possible vertex attribute that can be used by
 /// a renderer; a vertex always has a position attribute, but
 /// additional attributes may or maynot be provided by a model
