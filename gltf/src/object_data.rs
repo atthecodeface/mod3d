@@ -483,7 +483,7 @@ impl ObjectData {
         let buffer = &self[bv.buffer()];
         let data = buffer.index_bd();
         let data = buffer_data(data.as_usize());
-        let byte_offset = ba.byte_offset() + bv.byte_offset() - (data.byte_offset as usize);
+        let byte_offset = ba.byte_offset() + bv.byte_offset() - (data.byte_offset() as usize);
         let count = ba.count();
         eprintln!("make_index_accessor ba:? {data:?}, {count}, {byte_offset}");
         BufferIndexAccessor::new(data, count as u32, ba.component_type(), byte_offset as u32)
@@ -506,7 +506,7 @@ impl ObjectData {
         let buffer = &self[bv.buffer()];
         let data = buffer.vertex_bd();
         let data = buffer_data(data.as_usize());
-        let byte_offset = ba.byte_offset() + bv.byte_offset() - (data.byte_offset as usize);
+        let byte_offset = ba.byte_offset() + bv.byte_offset() - (data.byte_offset() as usize);
         let byte_stride = bv.byte_stride(ba.ele_byte_size());
         let count = ba.elements_per_data();
         eprintln!("make_data_accessor ba:? {data:?}, {count}, {byte_offset}, {byte_stride}");

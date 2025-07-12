@@ -66,8 +66,8 @@ impl Buffer {
             gl::BindBuffer(gl::ARRAY_BUFFER, gl);
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                data.byte_length as gl::types::GLsizeiptr,
-                data.as_ptr() as *const gl::types::GLvoid,
+                data.byte_length() as gl::types::GLsizeiptr,
+                data.as_ref().as_ptr() as *const gl::types::GLvoid,
                 gl::STATIC_DRAW,
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind to protect
@@ -84,7 +84,7 @@ impl Buffer {
         unsafe {
             // stops the indices messing up other VAO
             gl::BindVertexArray(0);
-            let buffer = view.data.as_ptr().add(view.byte_offset as usize);
+            let buffer = view.data.as_ref().as_ptr().add(view.byte_offset as usize);
             eprintln!("of_indices {0:?} {1} {2:?}", buffer, byte_length, view);
             gl::GenBuffers(1, (&mut gl) as *mut gl::types::GLuint);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, gl);

@@ -69,7 +69,7 @@ impl Buffer {
         //    WebGl2RenderingContext::STATIC_DRAW,
         // );
         unsafe {
-            let buf_view = js_sys::Uint8Array::view(data.as_slice());
+            let buf_view = js_sys::Uint8Array::view(data.as_ref());
             render_context.buffer_data_with_array_buffer_view(
                 WebGl2RenderingContext::ARRAY_BUFFER,
                 &buf_view,
@@ -98,7 +98,7 @@ impl Buffer {
     ) {
         assert!(self.is_none());
         render_context.bind_vertex_array(None);
-        let data = view.data.as_slice();
+        let data = view.data.as_ref();
         let data = data.split_at(view.byte_offset as usize).1;
         let gl = render_context.create_buffer().unwrap();
         render_context.bind_buffer(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, Some(&gl));
