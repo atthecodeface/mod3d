@@ -1,3 +1,7 @@
+# Release 0.3.0 (2025-07-15)
+
+- Converted the WebGl and OpenGL (+SDL2) to use the newer base accessing / Renderable trait
+
 # Release 0.2.0 (2024-12-23)
 
 - Running on Apple Silicon Macs in Sdl2 and Wasm WebGpu

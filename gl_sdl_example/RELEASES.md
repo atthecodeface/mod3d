@@ -1,3 +1,7 @@
+# Release 0.3.0 (2025-07-15)
+
+- Added tweaks required by new GLTF object data builder (to build descriptors)
+
 # Release 0.2.0 (2024-12-23)
 
 - Running on Apple Silicon Macs in Sdl2 and Wasm WebGpu

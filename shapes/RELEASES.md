@@ -1,3 +1,7 @@
+# Release 0.3.0 (2025-07-15)
+
+- Bumped version number to match workspace, and tidied some lints
+
 # Release 0.0.2 (2024-12-23)
 
 - Running on Apple Silicon Macs in Sdl2 and Wasm WebGpu

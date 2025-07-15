@@ -22,23 +22,23 @@ impl WGpuWindow {
     }
     pub fn prepare_viewport(&self) {}
     pub fn resize_viewport(&self, x: isize, y: isize, w: usize, h: usize) {}
-    pub fn event_poll(&mut self) -> Event {
-        while let Some(e) = self.event_pump.poll_event() {
-            match e {
-                sdl2::event::Event::Quit { .. } => {
-                    return Event::Quit;
-                }
-                sdl2::event::Event::Window {
-                    win_event: sdl2::event::WindowEvent::Resized(w, h),
-                    ..
-                } => {
-                    let w = w.max(0) as usize;
-                    let h = h.max(0) as usize;
-                    return Event::ResizeWindow(w, h);
-                }
-                _ => (),
-            }
-        }
+    pub fn event_poll(&self) -> Event {
+        // while let Some(e) = self.event_pump.poll_event() {
+        // match e {
+        // sdl::event::Event::Quit { .. } => {
+        // return Event::Quit;
+        // }
+        // sdl::event::Event::Window {
+        // win_event: sdl2::event::WindowEvent::Resized(w, h),
+        // ..
+        // } => {
+        // let w = w.max(0) as usize;
+        // let h = h.max(0) as usize;
+        // return Event::ResizeWindow(w, h);
+        // }
+        // _ => (),
+        // }
+        // }
         Event::None
     }
     pub fn clear_framebuffer(&self) {}

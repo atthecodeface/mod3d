@@ -26,15 +26,29 @@ impl<T, const N: usize> ByteBuffer for [T; N] {
     }
 
     //fp borrow_bytes
+    ///
     fn borrow_bytes(&self) -> &[u8] {
         let len = std::mem::size_of::<T>() * self.len();
         let data = self.as_u8_ptr();
+
+        // # Safety
+        //
+        // The resultant slice is derived from a valid pointer and
+        // length; the data can be interpreted as u8 if required; so
+        // this is safe.
         unsafe { std::slice::from_raw_parts(data, len) }
     }
 
     //fp as_u8_ptr
     fn as_u8_ptr(&self) -> *const u8 {
         let data: *const T = &self[0];
+
+        // # Safety
+        //
+        // The resultant pointer is a valid pointer to u8 (assuming T
+        // is initialized?). Use of the resultant pointer is always
+        // unsafe, as it is a pointer; but that is down to the user of
+        // a pointer.
         unsafe { std::mem::transmute::<_, *const u8>(data) }
     }
 
@@ -53,12 +67,23 @@ impl<T> ByteBuffer for Vec<T> {
     fn borrow_bytes(&self) -> &[u8] {
         let len = std::mem::size_of::<T>() * self.len();
         let data = self.as_u8_ptr();
+        // # Safety
+        //
+        // The resultant slice is derived from a valid pointer and
+        // length; the data can be interpreted as u8 if required; so
+        // this is safe.
         unsafe { std::slice::from_raw_parts(data, len) }
     }
 
     //fp as_u8_ptr
     fn as_u8_ptr(&self) -> *const u8 {
         let data: *const T = &self[0];
+        // # Safety
+        //
+        // The resultant pointer is a valid pointer to u8 (assuming T
+        // is initialized?). Use of the resultant pointer is always
+        // unsafe, as it is a pointer; but that is down to the user of
+        // a pointer.
         unsafe { std::mem::transmute::<_, *const u8>(data) }
     }
 
@@ -77,12 +102,23 @@ impl<T> ByteBuffer for &[T] {
     fn borrow_bytes(&self) -> &[u8] {
         let len = std::mem::size_of_val(*self);
         let data = self.as_u8_ptr();
+        // # Safety
+        //
+        // The resultant slice is derived from a valid pointer and
+        // length; the data can be interpreted as u8 if required; so
+        // this is safe.
         unsafe { std::slice::from_raw_parts(data, len) }
     }
 
     //fp as_u8_ptr
     fn as_u8_ptr(&self) -> *const u8 {
         let data: *const T = self.as_ptr();
+        // # Safety
+        //
+        // The resultant pointer is a valid pointer to u8 (assuming T
+        // is initialized?). Use of the resultant pointer is always
+        // unsafe, as it is a pointer; but that is down to the user of
+        // a pointer.
         unsafe { std::mem::transmute::<_, *const u8>(data) }
     }
 
