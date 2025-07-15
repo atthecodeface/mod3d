@@ -1,8 +1,7 @@
 //a Imports
 use mod3d_base::Instance;
-use mod3d_gl::{Gl, ShaderInstantiable, UniformBuffer};
 
-use crate::objects;
+use crate::{objects, Model3DWGpu, ShaderInstantiable, ShaderProgram};
 
 //a Light, WorldData
 #[derive(Debug, Default)]
@@ -21,37 +20,44 @@ pub struct WorldData {
 
 //a Base
 //tp Base
-pub struct Base<G: Gl> {
+pub struct Base<'tgt> {
     /// The instantiable objects
-    objects: mod3d_base::Instantiable<G>,
+    objects: mod3d_base::Instantiable<Model3DWGpu<'tgt>>,
     /// The shader programs
-    shader_program: G::Program,
+    shader_program: ShaderProgram,
     /// Uniform buffers
-    world_gl: UniformBuffer<G>,
+    world_gl: UniformBuffer,
 }
 
 //tp Instantiable
-/// Borrows from Base
-pub struct Instantiable<'inst, G: Gl> {
+/// A set of instances that can be instantiated with a particular
+/// shader program class
+///
+/// This has the lifetime of the instantiable data, and is also
+/// limited by the lifetime of the shader program class
+pub struct Instantiable<'inst, 'prg> {
     /// The set of instances of shader_instantiable (only one of them!)
-    instantiables: mod3d_gl::ShaderInstantiable<'inst, G>,
+    instantiables: mod3d_gl::ShaderInstantiable<'inst, Model3DWGpu<'prg>>,
 }
 
 //tp Instances
-/// Borrows from Base
-pub struct Instances<'inst, G: Gl> {
+/// A set of instances that can be drawn in a Model3DWGpu target
+///
+/// This has the lifetime of the instance, and is also limited by the
+/// lifetime of the shader program class
+pub struct Instances<'inst, 'tgt> {
     /// The set of instances of objects (only one of them!)
     ///
     /// These are independent of the GL context lifetime
-    instance: Instance<'inst, G>,
+    instance: Instance<'inst, Model3DWGpu<'tgt>>,
 }
 
 //ip Base
-impl<G: Gl> Base<G> {
+impl<'tgt> Base<'tgt> {
     //fp new
     pub fn new(
-        gl: &mut G,
-        shader_program: G::Program,
+        wgpu: &mut Model3DWGpu<'tgt>,
+        shader_program: ShaderProgram,
         filename: &str,
         node_names: &[&str],
     ) -> Result<Self, String> {
@@ -64,14 +70,14 @@ impl<G: Gl> Base<G> {
 
         // Bind the program uniform '1' to the uniform binding point 1
         // The base_shader exposes "Material" as program uniform 1
-        let _ = gl.program_bind_uniform_index(&shader_program, 1, material_uid);
+        // let _ = gl.program_bind_uniform_index(&shader_program, 1, material_uid);
 
         let world_data = [WorldData::default(); 1];
-        let world_gl = gl.uniform_buffer_create(&world_data, true).unwrap();
-        gl.uniform_index_of_range(&world_gl, world_uid, 0, 0);
-        let _ = gl.program_bind_uniform_index(&shader_program, 2, world_uid);
+        // let world_gl = gl.uniform_buffer_create(&world_data, true).unwrap();
+        // gl.uniform_index_of_range(&world_gl, world_uid, 0, 0);
+        // let _ = gl.program_bind_uniform_index(&shader_program, 2, world_uid);
 
-        let objects = objects::new(gl, filename, node_names)?;
+        let objects = objects::new(wgpu, filename, node_names)?;
         Ok(Self {
             objects,
             shader_program,
@@ -80,27 +86,27 @@ impl<G: Gl> Base<G> {
     }
 
     //fp make_instantiable
-    pub fn make_instantiable<'inst>(
+    pub fn make_instantiable<'inst, 'prg>(
         &'inst self,
-        gl: &mut G,
-    ) -> Result<Instantiable<'inst, G>, String> {
-        let instantiables = ShaderInstantiable::new(gl, &self.shader_program, &self.objects)
+        wgpu: &'inst mut Model3DWGpu<'prg>,
+    ) -> Result<Instantiable<'inst, 'prg>, String> {
+        let instantiables = ShaderInstantiable::new(wgpu, &self.shader_program, &self.objects)
             .map_err(|_| "Failed to create shader instantiable".to_string())?;
-        Ok(Instantiable::<G> { instantiables })
+        Ok(Instantiable { instantiables })
     }
 
     //fp make_instances
-    pub fn make_instances(&self) -> Instances<'_, G> {
+    pub fn make_instances(&self) -> Instances<'_, Model3DWGpu> {
         let instance = self.objects.instantiate();
         Instances { instance }
     }
 
     pub fn update(
         &self,
-        gl: &mut G,
+        wgpu: &mut Model3DWGpu,
         game_state: &mut GameState,
-        instantiable: &Instantiable<G>,
-        instances: &mut Instances<G>,
+        instantiable: &Instantiable<Model3DWGpu>,
+        instances: &mut Instances<Model3DWGpu>,
     ) {
         // Update world_gl.gl_buffer world_data[0] (there is only one)
         // view_transformation.rotate_by(&spin);

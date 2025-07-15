@@ -14,14 +14,15 @@ use crate::{BufferData, Renderable, VertexDesc};
 ///
 /// A [BufferDescriptor] is used within a [crate::BufferDataAccessor]
 /// to describe *just* an individual field element.
-///
-/// TODO: Add a byte_length field
 pub struct BufferDescriptor<'a, R: Renderable> {
     /// The `BufferData` that contains the actual vertex attribute data
     data: &'a BufferData<'a, R>,
 
     /// Byte offset to first data inside 'data'
     byte_offset: u32,
+
+    /// Byte length of the data used by the descriptor
+    byte_length: u32,
 
     // Indexed by instance - if true, instance 'n' vertex 'v' use the
     // data from index 'n'; if false then instance 'n' vertex 'v' use
@@ -66,6 +67,19 @@ where
     }
 }
 
+//ip AsRef<[u8]> for BufferDescriptor
+impl<'a, R> AsRef<[u8]> for BufferDescriptor<'a, R>
+where
+    R: Renderable,
+{
+    fn as_ref(&self) -> &[u8] {
+        let data: &[u8] = self.data.as_ref();
+        let start = self.byte_offset as usize;
+        let end = (self.byte_offset + self.byte_length) as usize;
+        &data[start..end]
+    }
+}
+
 //ip BufferDescriptor
 impl<'a, R: Renderable> BufferDescriptor<'a, R> {
     //ap data
@@ -81,6 +95,13 @@ impl<'a, R: Renderable> BufferDescriptor<'a, R> {
         self.byte_offset
     }
 
+    //ap byte_length
+    /// Get the byte length within the underlying [BufferData] for
+    /// this descriptor
+    pub fn byte_length(&self) -> u32 {
+        self.byte_length
+    }
+
     //ap stride
     /// Get the byte stride between different indices for the instances for
     /// this descriptor
@@ -94,14 +115,27 @@ impl<'a, R: Renderable> BufferDescriptor<'a, R> {
         &self.elements[n]
     }
 
+    //ap elements
+    /// Get a reference to the elements
+    pub fn elements(&self) -> &[VertexDesc] {
+        &self.elements
+    }
+
     //fp new
     /// Create a new view of a `BufferData`
     pub fn new(
         data: &'a BufferData<'a, R>,
         byte_offset: u32,
+        byte_length: u32,
         mut stride: u32,
         elements: Vec<VertexDesc>,
     ) -> Self {
+        assert!(
+            byte_offset + byte_length <= data.byte_length(),
+            "Buffer data is not large enough for data {byte_offset} + #{byte_length} [ got {}]",
+            data.byte_length()
+        );
+
         let rc_client = RefCell::new(R::Descriptor::default());
         for e in elements.iter() {
             stride = stride.max(e.byte_offset() as u32 + e.byte_length());
@@ -109,6 +143,7 @@ impl<'a, R: Renderable> BufferDescriptor<'a, R> {
         Self {
             data,
             byte_offset,
+            byte_length,
             stride,
             elements,
             rc_client,
@@ -116,6 +151,7 @@ impl<'a, R: Renderable> BufferDescriptor<'a, R> {
     }
 
     //mp add_vertex_desc
+    /// Add a [VertexDesc] to the fields that this [BufferDescriptor] describes.
     pub fn add_vertex_desc(&mut self, vertex_desc: VertexDesc) -> u8 {
         let n = self.elements.len() as u8;
         self.stride = self

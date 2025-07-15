@@ -1,14 +1,21 @@
 // ./target/release/mod3d-gl-sdl-example --shader sdp.json --node 0 --scale 0.1 --glb MetalRoughSpheres.glb
 use clap::Command;
 
-mod wgpu;
-// use mod3d_gl::Model3DOpenGL;
+mod types;
+pub use types::{TextureId, UniformId};
 
+mod wgpu;
+pub use wgpu::Model3DWGpu;
+
+mod pipeline;
+pub use pipeline::PipelineDesc;
 mod cmdline;
 mod model;
 mod objects;
-// mod shader_program;
-mod types;
+mod shader_program;
+use shader_program::ShaderProgram;
+mod shader_instantiable;
+use shader_instantiable::ShaderInstantiable;
 mod utils;
 mod wgpu_window;
 
@@ -39,7 +46,7 @@ fn main() -> Result<(), anyhow::Error> {
     let node_name_refs: Vec<&str> = node_names.iter().map(|s| &**s).collect();
 
     let mut sdl_window = wgpu_window::WGpuWindow::new()?;
-    let mut model3d = wgpu::Model3DWGpu::new(sdl_window.window());
+    let mut model3d = Model3DWGpu::new(sdl_window.window());
 
     let shader_paths = [std::path::Path::new("../")];
 

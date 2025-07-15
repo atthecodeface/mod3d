@@ -1,7 +1,7 @@
 //a Imports
 use std::cell::RefCell;
 
-use crate::{BufferData, BufferDescriptor, BufferElementType, Renderable, VertexAttr, VertexDesc};
+use crate::{BufferDescriptor, BufferElementType, Renderable, VertexAttr, VertexDesc};
 
 //a BufferDataAccessor
 //tp BufferDataAccessor
@@ -64,6 +64,12 @@ impl<'a, R: Renderable> BufferDataAccessor<'a, R> {
     /// Borrow the client
     pub fn borrow_client(&self) -> std::cell::Ref<R::DataAccessor> {
         self.rc_client.borrow()
+    }
+
+    //ap desc_index
+    /// desc_index
+    pub fn desc_index(&self) -> u8 {
+        self.desc_index
     }
 
     //ap desc

@@ -74,7 +74,7 @@ where
     let data_vertices = eg.push_byte_buffer(Box::new(vertex_data));
 
     let indices = eg.push_index_accessor(data_indices, 6, BufferElementType::UInt8, 0);
-    let desc = eg.push_descriptor(data_vertices, 0, 0); // stride used to be 6*4
+    let desc = eg.push_descriptor(data_vertices, 0, 0, 0); // Use all the buffer, and stride used to be 6*4
     let normals = eg.push_data_accessor(
         desc,
         VertexDesc::vec(VertexAttr::Normal, BufferElementType::Float32, 3, 3 * 4),
@@ -85,7 +85,7 @@ where
     );
 
     // Create set of data (indices, vertex data) to by subset into by the meshes and their primitives
-    eg.push_vertices(Some(indices), vertices, &[(VertexAttr::Normal, normals)]);
+    eg.push_vertices(Some(indices), vertices, &[normals]);
 }
 
 /// Create a mesh for the tetrahedron given the vertices index and

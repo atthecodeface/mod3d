@@ -1,8 +1,8 @@
 //a Imports
-use crate::{BufferData, BufferDataAccessor, BufferIndexAccessor, Texture, VertexAttr, Vertices};
+use crate::{BufferData, BufferDataAccessor, BufferIndexAccessor, Texture, Vertices};
 use crate::{BufferDescriptor, MaterialAspect, MaterialBaseData, ShortIndex};
 
-//a BufferClient
+//a Client traits
 //tt BufferClient
 /// Trait supported by a BufferData client
 ///
@@ -10,10 +10,17 @@ use crate::{BufferDescriptor, MaterialAspect, MaterialBaseData, ShortIndex};
 ///
 /// The data may be created more than once with the same buffer; the client
 /// is responsible for deduplication within the render context if required
-pub trait BufferClient:
-    Sized + std::fmt::Display + std::fmt::Debug + std::default::Default + Clone
-{
+pub trait BufferClient: Sized + std::fmt::Debug + std::default::Default + Clone {
+    /// Format for display; this can be used in indented displays for
+    /// hierarchies in objects
+    ///
+    /// The trait itself does not require std::fmt::Display as that is
+    /// not implemented for some simple types (such as ()).
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        <Self as std::fmt::Debug>::fmt(self, fmt)
+    }
 }
+impl BufferClient for () {}
 
 //tt AccessorClient
 /// Trait supported by a BufferAccessor client
@@ -24,10 +31,8 @@ pub trait BufferClient:
 ///
 /// The data may be created more than once with the same buffer; the client
 /// is responsible for dedupliclation within the render context if required
-pub trait AccessorClient:
-    Sized + std::fmt::Display + std::fmt::Debug + std::default::Default + Clone
-{
-}
+pub trait AccessorClient: Sized + std::fmt::Debug + std::default::Default + Clone {}
+impl AccessorClient for () {}
 
 //tt DescriptorClient
 /// Trait supported by a BufferDescriptor client
@@ -38,10 +43,8 @@ pub trait AccessorClient:
 ///
 /// The data may be created more than once with the same descriptor; the client
 /// is responsible for dedupliclation within the render context if required
-pub trait DescriptorClient:
-    Sized + std::fmt::Display + std::fmt::Debug + std::default::Default + Clone
-{
-}
+pub trait DescriptorClient: Sized + std::fmt::Debug + std::default::Default + Clone {}
+impl DescriptorClient for () {}
 
 //tt TextureClient
 /// The trait that must be supported by a client texture
@@ -49,13 +52,15 @@ pub trait DescriptorClient:
 /// Default is required as the client is made when a texture is made
 /// Clone is required as the client is textures are cloned
 pub trait TextureClient: Sized + std::fmt::Debug + std::default::Default + Clone {}
+impl TextureClient for () {}
 
 //tt MaterialClient
 /// Trait supported by a material client
 ///
 /// Default is not required as materials are only created in response
 /// to a crate::Material
-pub trait MaterialClient: Sized + std::fmt::Display + std::fmt::Debug {}
+pub trait MaterialClient: Sized + std::fmt::Debug {}
+impl MaterialClient for () {}
 
 //tt VerticesClient
 /// The trait that must be supported by a client vertices
@@ -64,7 +69,9 @@ pub trait MaterialClient: Sized + std::fmt::Display + std::fmt::Debug {}
 /// instantiable object contains the [VerticesClient] for the Vertices
 ///
 pub trait VerticesClient: Sized + std::fmt::Debug + std::default::Default + Clone {}
+impl VerticesClient for () {}
 
+//a Renderable
 //tt Renderable
 /// The [Renderable] trait must be implemented by a type that is a
 /// client of the 3D model system. It provides associated types for a
@@ -74,16 +81,31 @@ pub trait VerticesClient: Sized + std::fmt::Debug + std::default::Default + Clon
 /// of renderable [Vertices].
 pub trait Renderable: Sized {
     /// The renderer's type that reflects a [BufferData]
+    ///
+    /// A BufferData is a slice of u8 that contains some data
+    /// (indices, vertex data, etc) for an object
     type Buffer: BufferClient;
 
+    /// The renderer's type that reflects a [BufferDescriptor]
+    ///
+    /// A buffer descriptor is a slice of a BufferData that contains
+    /// multiple records, each of which contains a number of fields
+    /// for different VertexAttr
+    type Descriptor: DescriptorClient;
+
     /// The renderer's type that reflects a [BufferDataAccessor]
+    ///
+    /// A BufferDataAccessor is a reference to a single entry in a
+    /// BufferDescriptor; hence it might be 'Position' for a vertex,
+    /// from a large array of vertex records in an object
     type DataAccessor: AccessorClient;
 
     /// The renderer's type that reflects a [BufferIndexAccessor]
+    ///
+    /// A BufferIndexAccessor represents a slice of a BufferData
+    /// containing indices for accessing an array of vertex records
+    /// for rendering a primitive in an object
     type IndexAccessor: AccessorClient;
-
-    /// The renderer's type that reflects a [BufferDescriptor]
-    type Descriptor: DescriptorClient;
 
     /// The renderer's type that represents a texture; this is
     /// supplied to material creation, and hence is less a product of
@@ -100,18 +122,21 @@ pub trait Renderable: Sized {
     /// particular pipeline within the renderer
     type Vertices: VerticesClient;
 
+    /// Initialize a buffer data client - it will have been created using default()
+    ///
+    /// This is invoked by the base library only when the client
+    /// invoked 'create_client' for a data buffer
+    fn init_buffer_data_client(
+        &mut self,
+        client: &mut Self::Buffer,
+        buffer_data: &BufferData<Self>,
+    );
+
     /// Initialize a buffer descriptor client - it will have been created using default()
     fn init_buffer_desc_client(
         &mut self,
         client: &mut Self::Descriptor,
         buffer_desc: &BufferDescriptor<Self>,
-    );
-
-    /// Initialize a buffer data client - it will have been created using default()
-    fn init_buffer_data_client(
-        &mut self,
-        client: &mut Self::Buffer,
-        buffer_data: &BufferData<Self>,
     );
 
     /// Initialize the client of an index accessor of a buffer data

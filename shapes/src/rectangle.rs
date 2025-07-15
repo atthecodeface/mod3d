@@ -12,7 +12,7 @@ impl<T> RegionData for T where T: Sized + Clone + std::fmt::Debug {}
 
 //a RegionIndex
 //tp RegionIndex
-/// Create an index into the regions of a Rectangle
+// Create an index into the regions of a Rectangle
 index_vec::define_index_type! {
     pub struct RegionIndex = u32;
 }

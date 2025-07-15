@@ -107,9 +107,7 @@ impl<'a, R: Renderable> BufferData<'a, R> {
         let data = data.borrow_bytes();
         assert!(
             byte_offset + byte_length <= data.len() as u32,
-            "Buffer is not large enough for data {} + #{} [ got {}]",
-            byte_offset,
-            byte_length,
+            "Buffer is not large enough for data {byte_offset} + #{byte_length} [ got {}]",
             data.len()
         );
         Self {
@@ -154,12 +152,11 @@ impl<'a, R: Renderable> std::fmt::Display for BufferData<'a, R> {
         let data_ptr = self.data.as_ptr();
         write!(
             f,
-            "BufferData[{:?}+{}#{}]:GL({})",
-            data_ptr,
-            self.byte_offset,
-            self.byte_length,
-            self.rc_client.borrow()
-        )
+            "BufferData[{:?}+{}#{}]:",
+            data_ptr, self.byte_offset, self.byte_length,
+        )?;
+        use crate::BufferClient;
+        (*self.rc_client.borrow()).fmt(f)
     }
 }
 

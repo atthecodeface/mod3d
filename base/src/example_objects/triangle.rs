@@ -28,20 +28,20 @@ where
 
     let indices = eg.push_index_accessor(data_indices, 3, BufferElementType::UInt8, 0);
 
-    let vertex_desc = eg.push_descriptor(data_vertices, 0, 0); // stride used to be 0
+    let vertex_desc = eg.push_descriptor(data_vertices, 0, 9 * 4, 0); // stride used to be 0
     let vertices = eg.push_data_accessor(
         vertex_desc,
         VertexDesc::vec(VertexAttr::Position, BufferElementType::Float32, 3, 0),
     );
 
-    let normal_desc = eg.push_descriptor(data_vertices, 9 * 4, 0); // stride used to be 0
+    let normal_desc = eg.push_descriptor(data_vertices, 9 * 4, 9 * 4, 0); // stride used to be 0
     let normals = eg.push_data_accessor(
         normal_desc,
         VertexDesc::vec(VertexAttr::Normal, BufferElementType::Float32, 3, 0),
     );
 
     // Create set of data (indices, vertex data) to by subset into by the meshes and their primitives
-    eg.push_vertices(Some(indices), vertices, &[(VertexAttr::Normal, normals)]);
+    eg.push_vertices(Some(indices), vertices, &[normals]);
 }
 
 /// Create a mesh for the triangle given the vertices index and

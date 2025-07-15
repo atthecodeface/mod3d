@@ -1,12 +1,21 @@
+//a Imports
 use crate::types::Event;
 
+//a SdlWindow
+//tp SdlWindow
 pub struct SdlWindow {
+    #[allow(dead_code)]
     sdl: sdl2::Sdl,
+    #[allow(dead_code)]
     window: sdl2::video::Window,
+    #[allow(dead_code)]
     gl_context: sdl2::video::GLContext,
     event_pump: sdl2::EventPump,
 }
+
+//ip SdlWindow
 impl SdlWindow {
+    //cp new
     pub fn new() -> Result<Self, anyhow::Error> {
         let sdl = sdl2::init().unwrap();
         let video_subsystem = sdl.video().unwrap();
@@ -33,6 +42,8 @@ impl SdlWindow {
             event_pump,
         })
     }
+
+    //mp prepare_viewport
     pub fn prepare_viewport(&self) {
         unsafe {
             let (w, h) = self.window.drawable_size();
@@ -48,9 +59,13 @@ impl SdlWindow {
         unsafe { gl::Enable(gl::DEPTH_TEST) };
         mod3d_gl::opengl_utils::check_errors().unwrap();
     }
+
+    //mp resize_viewport
     pub fn resize_viewport(&self, x: isize, y: isize, w: usize, h: usize) {
         unsafe { gl::Viewport(x as i32, y as i32, w as i32, h as i32) };
     }
+
+    //mp event_poll
     pub fn event_poll(&mut self) -> Event {
         while let Some(e) = self.event_pump.poll_event() {
             match e {
@@ -70,6 +85,8 @@ impl SdlWindow {
         }
         Event::None
     }
+
+    //mp clear_framebuffer
     pub fn clear_framebuffer(&self) {
         mod3d_gl::opengl_utils::check_errors().unwrap();
 
@@ -77,6 +94,8 @@ impl SdlWindow {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
     }
+
+    //mp swap_framebuffer
     pub fn swap_framebuffer(&self) {
         mod3d_gl::opengl_utils::check_errors().unwrap();
 

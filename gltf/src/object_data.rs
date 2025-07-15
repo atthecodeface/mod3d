@@ -544,7 +544,13 @@ impl ObjectData {
         let byte_stride = bv.byte_stride(0);
         let byte_length = bv.byte_length();
         eprintln!("make_descriptor {view:?} {data:?}, {byte_offset}+{byte_length}, {byte_stride}");
-        BufferDescriptor::new(data, byte_offset as u32, byte_stride as u32, vec![])
+        BufferDescriptor::new(
+            data,
+            byte_offset as u32,
+            byte_length as u32,
+            byte_stride as u32,
+            vec![],
+        )
     }
 
     //mp gen_descriptors

@@ -3,6 +3,7 @@ use serde::{self, Deserialize, Serialize};
 pub trait Indexable:
     Sized + std::ops::Deref<Target = usize> + std::ops::DerefMut + std::convert::From<usize>
 {
+    #[allow(dead_code)]
     fn as_usize(&self) -> usize;
 }
 macro_rules! index_type {

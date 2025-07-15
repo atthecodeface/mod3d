@@ -50,7 +50,7 @@ pub fn new<G: Gl>(
 
     let buffer_data = od.gen_buffer_data::<_, _, G>(&|x| &buffers[x]);
 
-    let (buffer_descriptors) = od.gen_descriptors(&gltf, &|x| &buffer_data[x]);
+    let buffer_descriptors = od.gen_descriptors(&gltf, &|x| &buffer_data[x]);
 
     let (buffer_index_accessors, buffer_data_accessors) =
         od.gen_accessors(&gltf, &|x| &buffer_data[x], &|x| &buffer_descriptors[x]);
@@ -59,9 +59,9 @@ pub fn new<G: Gl>(
         &buffer_data_accessors[x]
     });
 
-    use image::io::Reader;
     use image::DynamicImage;
     use image::ImageFormat;
+    use image::ImageReader;
     use std::io::Cursor;
     fn image_load(
         (buffer_index, byte_offset, byte_length): (usize, usize, usize),
@@ -76,8 +76,8 @@ pub fn new<G: Gl>(
             let buffer =
                 Cursor::new(&buffers[buffer_index][byte_offset..byte_offset + byte_length]);
             let reader = match uri_or_type {
-                "image/jpeg" => Reader::with_format(buffer, ImageFormat::Jpeg),
-                "image/png" => Reader::with_format(buffer, ImageFormat::Png),
+                "image/jpeg" => ImageReader::with_format(buffer, ImageFormat::Jpeg),
+                "image/png" => ImageReader::with_format(buffer, ImageFormat::Png),
                 _ => return Err(format!("Unknown image format {uri_or_type}")),
             };
             let image = reader

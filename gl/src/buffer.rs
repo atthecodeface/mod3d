@@ -1,7 +1,7 @@
 //a Imports
 use std::marker::PhantomData;
 
-use mod3d_base::{BufferDataAccessor, BufferElementType, BufferIndexAccessor, VertexAttr};
+use mod3d_base::{BufferDataAccessor, BufferElementType, BufferIndexAccessor};
 
 use crate::{Gl, GlProgram};
 

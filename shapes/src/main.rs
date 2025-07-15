@@ -16,7 +16,6 @@ pub use mod3d_gltf::{
 use icosphere::Icosphere;
 use mesh_set::{MeshSet, Triangle, Vertex, VertexIndex};
 use mod3d_gltf::{Gltf, GltfAsset, GltfNode, GltfScene};
-use mod3d_gltf::{GltfAccessor, GltfBuffer, GltfBufferView, GltfMesh, GltfPrimitive};
 use rectangle::Rectangle;
 
 //a Main

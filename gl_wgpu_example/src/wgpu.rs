@@ -1,10 +1,18 @@
-use mod3d_base::{BufferDataAccessor, BufferElementType, VertexAttr};
+use mod3d_base::{
+    BufferDataAccessor, BufferDescriptor, BufferElementType, BufferIndexAccessor, VertexAttr,
+};
 
 use mod3d_gl::{Gl, GlProgram, GlShaderType, Mat4, UniformBuffer};
 
 mod buffer;
+mod index_buffer;
+mod vertex_buffer;
 
 use crate::utils::rtc::run_to_completion as rtc;
+
+pub use buffer::Buffer;
+pub use index_buffer::IndexBuffer;
+pub use vertex_buffer::{RcVertexBuffer, VertexAccessor, VertexBuffer};
 
 use thiserror::Error;
 #[derive(Error, Debug)]
@@ -30,6 +38,12 @@ pub struct Model3DWGpu<'tgt> {
 
 //ip Model3DWGpu
 impl<'tgt> Model3DWGpu<'tgt> {
+    //ap device
+    pub fn device(&self) -> &wgpu::Device {
+        &self.device
+    }
+
+    //cp new
     pub fn new<I>(target: I) -> Result<Self, Error>
     where
         I: Into<wgpu::SurfaceTarget<'tgt>>,
@@ -67,12 +81,43 @@ impl<'tgt> Model3DWGpu<'tgt> {
 }
 
 //ip mod3d_base::Renderable for Model3DWGpu
+
+// Renderable provides a means to generate an Instantiable which does
+// not have the lifetime of the original data. The Instantiable has a
+// RenderRecipe with the primitives that need to be drawn.
+//
+// It *can* be used to generate in a compatible RenderPipeline, using a RenderPass
+//
+// RenderPiperlineDescription has:
+//
+//  PipelineLayout
+//
+//  VertexState - an array of VertexBufferLayout, each of which must be given a set_vertex_buffer, and each of which contains one or more vertex attribute data. Plus a shader program.
+//
+//  FragmentState
+//
+//  Primitive Toplogy - TriangleStrip, Lines, etc
+//
+// RenderPass has:
+//
+//  set_pipeline( Pipeline ) - which influences the slot numbers
+//
+//  set_index_buffer( Buffer Slice, Index Format ) - so the Vertices client must have that information
+//
+//  set_vertex_buffer( slot #, Buffer Slice ) - so the Vertices client must have some vec of Buffer Slice
+//
+// The RenderRecipe requires each Primitive to refer to the corrent RenderPass somehow
+//
+// Note: BufferSlice has a sublifetime of the Buffer it refers to
+//
 impl<'tgt> mod3d_base::Renderable for Model3DWGpu<'tgt> {
-    type Buffer = (); // buffer::Buffer;
-    type Accessor = (); // mod3d_gl::BufferView<Self>;
-    type Texture = (); // texture::Texture;
-    type Material = (); // mod3d_gl::Material;
-    type Vertices = (); // mod3d_gl::Vertices<Self>;
+    type Buffer = (); // Buffers are actually never created from data
+    type Descriptor = vertex_buffer::RcVertexBuffer;
+    type DataAccessor = vertex_buffer::VertexAccessor;
+    type IndexAccessor = index_buffer::IndexBuffer;
+    type Texture = (); // In the Instantiable
+    type Material = (); // In the Instantiable
+    type Vertices = (); // In the Instantiable
 
     //mp init_buffer_data_client
     /// Initialize a BufferData client
@@ -81,23 +126,39 @@ impl<'tgt> mod3d_base::Renderable for Model3DWGpu<'tgt> {
     /// gl buffer is 0 then create, else it already exists with the same data
     fn init_buffer_data_client(
         &mut self,
-        client: &mut Self::Buffer,
-        buffer_data: &mod3d_base::BufferData<Self>,
+        _client: &mut Self::Buffer,
+        _buffer_data: &mod3d_base::BufferData<Self>,
     ) {
-        if client.is_none() {
-            client.of_data(buffer_data, self)
-        }
+        panic!("Buffers should never have their client created");
     }
 
-    //mp init_buffer_view_client
-    /// Initialize a buffer view client
-    fn init_buffer_view_client(
+    //mp init_buffer_desc_client
+    /// Initialize a buffer descriptor client
+    fn init_buffer_desc_client(
         &mut self,
-        client: &mut Self::Accessor,
-        buffer_view: &BufferAccessor<Self>,
-        attr: VertexAttr,
+        client: &mut Self::Descriptor,
+        buffer_desc: &BufferDescriptor<Self>,
     ) {
-        // client.init_buffer_view_client(buffer_view, attr, self);
+        client.init(self, buffer_desc);
+    }
+
+    //mp init_index_accessor_client
+    /// Initialize a client of a BufferIndexAccessor
+    fn init_index_accessor_client(
+        &mut self,
+        client: &mut Self::IndexAccessor,
+        index_accessor: &BufferIndexAccessor<Self>,
+    ) {
+    }
+
+    //mp init_data_accessor_client
+    /// Initialize a buffer view client
+    fn init_data_accessor_client(
+        &mut self,
+        client: &mut Self::DataAccessor,
+        bda: &BufferDataAccessor<Self>,
+    ) {
+        client.init(self, bda);
     }
 
     //mp create_vertices_client

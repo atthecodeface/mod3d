@@ -4,7 +4,7 @@ use std::pin::Pin;
 
 use crate::{
     BufferData, BufferDataAccessor, BufferDescriptor, BufferElementType, BufferIndexAccessor,
-    ByteBuffer, Renderable, ShortIndex, VertexAttr, VertexDesc, Vertices,
+    ByteBuffer, Renderable, ShortIndex, VertexDesc, Vertices,
 };
 
 //a ExampleBuffers
@@ -13,10 +13,8 @@ use crate::{
 ///
 /// It allows the buffers to be borrowed (immutably) for the lifetime
 /// of the structure, even if later more buffers are added to the Vec
-///
-/// Can remove the RefCell?
 pub struct Buffers<'buffers> {
-    buffers: RefCell<Vec<Box<dyn ByteBuffer + 'buffers>>>,
+    buffers: RefCell<Vec<Pin<Box<dyn ByteBuffer + 'buffers>>>>,
 }
 
 //ip Buffers
@@ -33,17 +31,24 @@ impl<'buffers> Buffers<'buffers> {
     pub fn push(&self, buffer: Box<dyn ByteBuffer>) -> usize {
         let mut buffers = self.buffers.borrow_mut();
         let n = buffers.len();
-        buffers.push(buffer);
+        buffers.push(buffer.into());
         n
     }
 
     //ap Borrow a buffer
-    /// Create a new [BufferAccessor] on a particular [ByteBuffer] instance that has already been pushed
+    /// Get a reference to one of the buffers held by self;
     pub fn buffer(&self, n: usize) -> &'buffers dyn ByteBuffer {
         let buffers = self.buffers.borrow();
         assert!(n < buffers.len(), "Buffer index out of range");
         let buffer = buffers[n].as_ref();
-        unsafe { std::mem::transmute::<&'_ dyn ByteBuffer, &'buffers dyn ByteBuffer>(buffer) }
+        // Safety:
+        //
+        // Extending the lifetime of the reference to the ByteBuffer to
+        // that of self is safe as each element of self.buffers is not
+        // able to move (they are Pinned) and this reference cannot
+        // outlive self.buffers, and the references are guaranteed not to
+        // be used during the drop of Self
+        unsafe { std::mem::transmute::<&'_ dyn ByteBuffer, &'buffers dyn ByteBuffer>(&*buffer) }
     }
 }
 
@@ -100,6 +105,13 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
         ofs: u32,
     ) -> usize {
         let n = self.index_accessors.len();
+        // Safety:
+        //
+        // Extending the lifetime of the reference to BufferIndexAccessor to
+        // that of self is safe as each element of self.descriptors is not
+        // able to move (they are Pinned) and this reference cannot
+        // outlive self.index_accessors, and the references are guaranteed not to
+        // be used during the drop of Self
         let d = unsafe {
             std::mem::transmute::<&BufferData<'_, R>, &'buffers BufferData<'buffers, R>>(
                 &self.data[data],
@@ -113,14 +125,36 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
     //fp push_descriptor
     /// Create a new [BufferDescriptor<] on a particular [BufferData]
     /// instance that has already been pushed
-    pub fn push_descriptor(&mut self, data: usize, byte_offset: u32, stride: u32) -> usize {
+    pub fn push_descriptor(
+        &mut self,
+        data: usize,
+        byte_offset: u32,
+        mut byte_length: u32,
+        stride: u32,
+    ) -> usize {
         let n = self.data_accessors.len();
+        // Safety:
+        //
+        // Extending the lifetime of the reference to BufferData to
+        // that of self is safe as each element of self.data is not
+        // able to move (they are Pinned) and this reference cannot
+        // outlive self.data, and the references are guaranteed not to
+        // be used during the drop of Self
         let d = unsafe {
             std::mem::transmute::<&BufferData<'_, R>, &'buffers BufferData<'buffers, R>>(
                 &self.data[data],
             )
         };
-        let desc = Box::new(BufferDescriptor::new(d, byte_offset, stride, vec![]));
+        if byte_length == 0 {
+            byte_length = d.byte_length() - byte_offset;
+        }
+        let desc = Box::new(BufferDescriptor::new(
+            d,
+            byte_offset,
+            byte_length,
+            stride,
+            vec![],
+        ));
         self.descriptors.push(desc.into());
         n
     }
@@ -133,6 +167,13 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
     {
         let n = self.data_accessors.len();
         let desc_n = self.descriptors[desc].add_vertex_desc(vertex_desc);
+        // Safety:
+        //
+        // Extending the lifetime of the reference to BufferDescriptor to
+        // that of self is safe as each element of self.descriptors is not
+        // able to move (they are Pinned) and this reference cannot
+        // outlive self.descriptors, and the references are guaranteed not to
+        // be used during the drop of Self
         let desc = unsafe {
             std::mem::transmute::<&BufferDescriptor<'_, R>, &'buffers BufferDescriptor<'buffers, R>>(
                 &self.descriptors[desc],
@@ -148,6 +189,13 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
     pub fn indices(&self, n: Option<usize>) -> Option<&'buffers BufferIndexAccessor<'buffers, R>> {
         if let Some(n) = n {
             let buffer = self.index_accessors[n].as_ref();
+            // Safety:
+            //
+            // Extending the lifetime of the reference to BufferIndexAccessor to
+            // that of self is safe as each element of self.index_accessors is not
+            // able to move (they are Pinned) and this reference cannot
+            // outlive self.index_accessors, and the references are guaranteed not to
+            // be used during the drop of Self
             Some(unsafe {
                 std::mem::transmute::<
                     &BufferIndexAccessor<'_, R>,
@@ -166,6 +214,13 @@ impl<'buffers, R: Renderable> DataAccessors<'buffers, R> {
             "Data accessor index out of range"
         );
         let buffer = self.data_accessors[n].as_ref();
+        // Safety:
+        //
+        // Extending the lifetime of the reference to BufferDataAccessor to
+        // that of self is safe as each element of self.data_accessors is not
+        // able to move (they are Pinned) and this reference cannot
+        // outlive self.data_accessors, and the references are guaranteed not to
+        // be used during the drop of Self
         unsafe {
             std::mem::transmute::<
                 &BufferDataAccessor<'_, R>,
@@ -233,8 +288,15 @@ impl<'a, R: Renderable> ExampleVertices<'a, R> {
     //fp push_descriptor
     /// Create a new [BufferDescriptor<] on a particular [BufferData]
     /// instance that has already been pushed
-    pub fn push_descriptor(&mut self, data: usize, byte_offset: u32, stride: u32) -> usize {
-        self.accessors.push_descriptor(data, byte_offset, stride)
+    pub fn push_descriptor(
+        &mut self,
+        data: usize,
+        byte_offset: u32,
+        byte_length: u32,
+        stride: u32,
+    ) -> usize {
+        self.accessors
+            .push_descriptor(data, byte_offset, byte_length, stride)
     }
 
     //fp push_data_accessor
@@ -256,13 +318,13 @@ impl<'a, R: Renderable> ExampleVertices<'a, R> {
         &mut self,
         indices: Option<usize>,
         positions: usize,
-        attrs: &[(VertexAttr, usize)],
+        attrs: &[usize],
     ) -> ShortIndex {
         let n = self.vertices.len();
         let i = self.accessors.indices(indices);
         let v = self.accessors.data_accessor(positions);
         let mut vertices = Vertices::new(i, v);
-        for (attr, view_id) in attrs {
+        for view_id in attrs {
             let v = self.accessors.data_accessor(*view_id);
             vertices.add_attr(v);
         }

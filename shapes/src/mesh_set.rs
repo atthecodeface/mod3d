@@ -2,16 +2,12 @@
 use crate::{Vector2D, Vector3D};
 use mod3d_base::ByteBuffer;
 
-use mod3d_gltf::Indexable;
-use mod3d_gltf::{
-    AccessorIndex, BufferIndex, ImageIndex, MaterialIndex, MeshIndex, NodeIndex, PrimitiveIndex,
-    SceneIndex, TextureIndex, ViewIndex,
-};
+use mod3d_gltf::{AccessorIndex, MeshIndex, ViewIndex};
 use mod3d_gltf::{Gltf, GltfBuffer, GltfMesh};
 
 use std::ops::Range;
 
-use index_vec::{index_vec, IndexVec};
+use index_vec::IndexVec;
 
 index_vec::define_index_type! {
     pub struct VertexIndex = u32;
@@ -258,7 +254,7 @@ impl MeshSet {
                 ib,
                 (pr.indices.start.index() as u32) * (std::mem::size_of::<u32>() as u32),
                 (pr.indices.end - pr.indices.start).index() as u32,
-                mod3d_base::BufferElementType::new_int(false,32),
+                mod3d_base::BufferElementType::new_int(false, 32),
                 1,
             );
             let p = m.add_primitive(pr.primitive_type, Some(ia), None);

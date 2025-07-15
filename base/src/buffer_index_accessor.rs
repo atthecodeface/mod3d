@@ -53,6 +53,20 @@ where
     }
 }
 
+//ip AsRef<[u8]> for BufferIndexAccessor
+impl<'a, R> AsRef<[u8]> for BufferIndexAccessor<'a, R>
+where
+    R: Renderable,
+{
+    fn as_ref(&self) -> &[u8] {
+        let data: &[u8] = self.data.as_ref();
+        let start = self.byte_offset as usize;
+        let byte_length = self.number_indices * self.ele_type.byte_length();
+        let end = (self.byte_offset + byte_length) as usize;
+        &data[start..end]
+    }
+}
+
 //ip BufferIndexAccessor
 impl<'a, R: Renderable> BufferIndexAccessor<'a, R> {
     //ap data

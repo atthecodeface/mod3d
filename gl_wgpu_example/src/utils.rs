@@ -28,6 +28,7 @@ pub mod rtc {
     }
 }
 
+//fp read_file
 pub fn read_file(shader_paths: &[&Path], filename: &str) -> Result<String, anyhow::Error> {
     if let Ok(x) = std::fs::read_to_string(filename) {
         Ok(x)

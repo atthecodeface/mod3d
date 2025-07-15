@@ -34,7 +34,7 @@ pub fn new_of_glb<G: Gl>(
 
     let buffer_data = od.gen_buffer_data::<_, _, G>(&|x| &buffers[x]);
 
-    let (buffer_descriptors) = od.gen_descriptors(&gltf, &|x| &buffer_data[x]);
+    let buffer_descriptors = od.gen_descriptors(&gltf, &|x| &buffer_data[x]);
 
     let (buffer_index_accessors, buffer_data_accessors) =
         od.gen_accessors(&gltf, &|x| &buffer_data[x], &|x| &buffer_descriptors[x]);

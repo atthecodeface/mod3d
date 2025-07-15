@@ -17,8 +17,8 @@ impl WGpuWindow {
 
         Ok(WGpuWindow { event_loop, window })
     }
-    pub fn window(&self) -> winit::window::Window {
-        self.window
+    pub fn window(&self) -> &winit::window::Window {
+        &self.window
     }
     pub fn prepare_viewport(&self) {}
     pub fn resize_viewport(&self, x: isize, y: isize, w: usize, h: usize) {}

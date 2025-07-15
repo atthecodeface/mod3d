@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use mod3d_base::{BufferDataAccessor, BufferElementType, BufferIndexAccessor, VertexAttr};
+use mod3d_base::{BufferDataAccessor, BufferElementType, BufferIndexAccessor};
 
 use crate::{Gl, GlProgram, GlShaderType, Mat4, PipelineDesc, UniformBuffer};
 
@@ -314,7 +314,7 @@ impl mod3d_base::Renderable for Model3DOpenGL {
     /// Initialize an accessor of indices
     fn init_index_accessor_client(
         &mut self,
-        client: &mut Self::IndexAccessor,
+        client: &mut Self::IndexAccessor, // BufferView
         buffer_view: &BufferIndexAccessor<Self>,
     ) {
         client.init_index_accessor_client(buffer_view, self);
@@ -324,7 +324,7 @@ impl mod3d_base::Renderable for Model3DOpenGL {
     /// Initialize the client side of a BufferDataAccessor (for a particular vertex attr)
     fn init_data_accessor_client(
         &mut self,
-        client: &mut Self::DataAccessor,
+        client: &mut Self::DataAccessor, // BufferView
         buffer_data_accessor: &BufferDataAccessor<Self>,
     ) {
         client.init_data_accessor_client(buffer_data_accessor, self);

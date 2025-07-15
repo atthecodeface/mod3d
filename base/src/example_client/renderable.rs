@@ -4,7 +4,7 @@ use std::rc::Rc;
 use crate::{
     AccessorClient, BufferClient, BufferData, BufferDataAccessor, BufferDescriptor,
     BufferIndexAccessor, DescriptorClient, Material, MaterialClient, Renderable, Texture,
-    TextureClient, VertexAttr, Vertices, VerticesClient,
+    TextureClient, Vertices, VerticesClient,
 };
 
 //a Buffer
