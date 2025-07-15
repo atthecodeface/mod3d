@@ -92,9 +92,9 @@ pub fn new<'tgt>(
         .gen_images(&gltf, &|b, u| image_load(b, u, &buffers))
         .map_err(|e| format!("Failed to parse image buffer: {e}"))?;
 
-    fn texture_of_image<'textures>(
-        image: &'textures image::DynamicImage,
-    ) -> mod3d_base::Texture<'textures, Model3DWGpu> {
+    fn texture_of_image<'call, 'obj>(
+        image: &'call image::DynamicImage,
+    ) -> mod3d_base::Texture<'call, Model3DWGpu<'obj>> {
         let w = image.width() as usize;
         let h = image.height() as usize;
         let bu8 = mod3d_base::BufferElementType::new_int(false, 8);
@@ -120,7 +120,7 @@ pub fn new<'tgt>(
     }
 
     let textures: Vec<mod3d_base::Texture<Model3DWGpu>> =
-        od.gen_textures(&gltf, &|i| &images[i], &texture_of_image);
+        od.gen_textures(&gltf, |i| &images[i], texture_of_image);
 
     let materials = od.gen_materials(&gltf);
     let mut obj = od.gen_object(&gltf, &vertices, &textures, &materials);

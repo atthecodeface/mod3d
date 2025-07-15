@@ -52,7 +52,7 @@ impl VertexBuffer {
         let desc = wgpu::VertexBufferLayout {
             array_stride: desc.stride() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
-            attributes,
+            attributes: &attributes,
         };
     }
     //zz All done

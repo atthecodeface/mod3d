@@ -18,10 +18,10 @@ impl ShaderProgram {
         shader_paths: &[&Path],
     ) -> Result<Self, anyhow::Error> {
         let shader_json = read_file(shader_paths, shader_filename)?;
-        let pipeline_desc: PipelineDesc<'_> = serde_json::from_str(&shader_json)?;
+        let pipeline_desc: PipelineDesc = serde_json::from_str(&shader_json)?;
 
-        let frag_src = read_file(shader_paths, &pipeline_desc.fragment_src)?; // .map_err(|e| e.to_string()),
-        let vert_src = read_file(shader_paths, &pipeline_desc.vertex_src)?; //  .map_err(|e| e.to_string()),
+        let frag_src = read_file(shader_paths, pipeline_desc.fragment_src())?; // .map_err(|e| e.to_string()),
+        let vert_src = read_file(shader_paths, pipeline_desc.vertex_src())?; //  .map_err(|e| e.to_string()),
 
         let src = frag_src + &vert_src;
         Ok(Self { pipeline_desc, src })
@@ -37,11 +37,15 @@ impl ShaderProgram {
         vertex_buffer_layout: &[wgpu::VertexBufferLayout],
         index_format: Option<wgpu::IndexFormat>,
         primitive_topology: wgpu::PrimitiveTopology,
+        surface_format: wgpu::TextureFormat,
+        depth_format: wgpu::TextureFormat,
     ) -> wgpu::RenderPipeline {
         let shader_module = wgpu::ShaderModuleDescriptor {
             label: None,
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(&self.src)),
         };
+
+        let shader_module = wgpu.device().create_shader_module(shader_module);
 
         let pipeline_layout_desc = wgpu::PipelineLayoutDescriptor {
             label: None,
@@ -53,7 +57,7 @@ impl ShaderProgram {
 
         let vertex_state = wgpu::VertexState {
             module: &shader_module,
-            entry_point: Some("vertex_main"),
+            entry_point: "vertex_main",
             buffers: vertex_buffer_layout,
             compilation_options: Default::default(),
         };
@@ -69,7 +73,7 @@ impl ShaderProgram {
         };
 
         let depth_stencil = wgpu::DepthStencilState {
-            format: Renderer::DEPTH_FORMAT,
+            format: depth_format,
             depth_write_enabled: true,
             depth_compare: wgpu::CompareFunction::Less,
             stencil: wgpu::StencilState::default(),
@@ -84,7 +88,7 @@ impl ShaderProgram {
 
         let fragment_state = wgpu::FragmentState {
             module: &shader_module,
-            entry_point: Some("fragment_main"),
+            entry_point: "fragment_main",
             targets: &targets,
             compilation_options: Default::default(),
         };

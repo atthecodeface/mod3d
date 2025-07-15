@@ -107,4 +107,11 @@ pub struct PipelineDesc {
 }
 
 //ip PipelineDesc
-impl PipelineDesc {}
+impl PipelineDesc {
+    pub fn vertex_src(&self) -> &str {
+        &self.vertex_src
+    }
+    pub fn fragment_src(&self) -> &str {
+        &self.fragment_src
+    }
+}

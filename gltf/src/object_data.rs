@@ -471,7 +471,7 @@ impl ObjectData {
     /// Generate a Vec of all the images
     pub fn gen_images<Image, F>(&mut self, gltf: &Gltf, get_image: &F) -> Result<Vec<Image>>
     where
-        F: Fn((usize, usize, usize), &str) -> std::result::Result<Image, String>,
+        F: for<'a> Fn((usize, usize, usize), &'a str) -> std::result::Result<Image, String>,
     {
         let mut result = vec![];
         for (ii, image_use) in self.images_used.iter_mut_required() {
@@ -734,16 +734,16 @@ impl ObjectData {
     //mp gen_textures
     /// Generate textures from the objects in the Gltf, given images
     /// that have been generated already
-    pub fn gen_textures<'textures, F, I, R, T>(
+    pub fn gen_textures<'call, 'textures, F, I, R, T>(
         &mut self,
         gltf: &Gltf,
-        image: &F,
-        texture_of_image: &T,
+        image: F,
+        texture_of_image: T,
     ) -> Vec<mod3d_base::Texture<'textures, R>>
     where
-        F: Fn(usize) -> &'textures I,
-        I: 'textures,
-        T: Fn(&'textures I) -> mod3d_base::Texture<'textures, R>,
+        F: Fn(usize) -> &'call I,
+        I: 'call,
+        T: Fn(&'call I) -> mod3d_base::Texture<'textures, R>,
         R: Renderable,
     {
         let mut textures = vec![];

@@ -25,8 +25,8 @@ pub struct Base<'tgt> {
     objects: mod3d_base::Instantiable<Model3DWGpu<'tgt>>,
     /// The shader programs
     shader_program: ShaderProgram,
-    /// Uniform buffers
-    world_gl: UniformBuffer,
+    // Uniform buffers
+    // world_gl: UniformBuffer,
 }
 
 //tp Instantiable
@@ -37,7 +37,7 @@ pub struct Base<'tgt> {
 /// limited by the lifetime of the shader program class
 pub struct Instantiable<'inst, 'prg> {
     /// The set of instances of shader_instantiable (only one of them!)
-    instantiables: mod3d_gl::ShaderInstantiable<'inst, Model3DWGpu<'prg>>,
+    instantiables: ShaderInstantiable<'inst, 'prg>,
 }
 
 //tp Instances
@@ -55,8 +55,8 @@ pub struct Instances<'inst, 'tgt> {
 //ip Base
 impl<'tgt> Base<'tgt> {
     //fp new
-    pub fn new(
-        wgpu: &mut Model3DWGpu<'tgt>,
+    pub fn new<'a>(
+        wgpu: &'a mut Model3DWGpu<'tgt>,
         shader_program: ShaderProgram,
         filename: &str,
         node_names: &[&str],
@@ -81,40 +81,40 @@ impl<'tgt> Base<'tgt> {
         Ok(Self {
             objects,
             shader_program,
-            world_gl,
+            // world_gl,
         })
     }
 
     //fp make_instantiable
-    pub fn make_instantiable<'inst, 'prg>(
+    pub fn make_instantiable<'a, 'inst>(
         &'inst self,
-        wgpu: &'inst mut Model3DWGpu<'prg>,
-    ) -> Result<Instantiable<'inst, 'prg>, String> {
+        wgpu: &'a mut Model3DWGpu<'tgt>,
+    ) -> Result<Instantiable<'inst, 'tgt>, String> {
         let instantiables = ShaderInstantiable::new(wgpu, &self.shader_program, &self.objects)
             .map_err(|_| "Failed to create shader instantiable".to_string())?;
         Ok(Instantiable { instantiables })
     }
 
     //fp make_instances
-    pub fn make_instances(&self) -> Instances<'_, Model3DWGpu> {
+    pub fn make_instances<'inst>(&'inst self) -> Instances<'inst, 'tgt> {
         let instance = self.objects.instantiate();
         Instances { instance }
     }
 
     pub fn update(
         &self,
-        wgpu: &mut Model3DWGpu,
+        wgpu: &Model3DWGpu,
         game_state: &mut GameState,
-        instantiable: &Instantiable<Model3DWGpu>,
-        instances: &mut Instances<Model3DWGpu>,
+        instantiable: &Instantiable,
+        instances: &mut Instances,
     ) {
         // Update world_gl.gl_buffer world_data[0] (there is only one)
         // view_transformation.rotate_by(&spin);
         // world_data[0].view_matrix = view_transformation.mat4();
 
-        gl.uniform_buffer_update_data(&self.world_gl, &game_state.world_data, 0);
-        gl.use_program(Some(&self.shader_program));
-        instantiable.instantiables.gl_draw(gl, &instances.instance);
+        // gl.uniform_buffer_update_data(&self.world_gl, &game_state.world_data, 0);
+        // gl.use_program(Some(&self.shader_program));
+        // instantiable.instantiables.gl_draw(gl, &instances.instance);
 
         use geo_nd::quat;
         game_state.spin_axis = quat::apply3(&game_state.axis_spin, &game_state.spin_axis);

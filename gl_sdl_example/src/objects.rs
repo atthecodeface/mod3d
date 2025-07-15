@@ -119,7 +119,7 @@ pub fn new<G: Gl>(
         mod3d_base::Texture::new(data, (w, h, 0), ele_type, elements_per_data)
     }
     let textures: Vec<mod3d_base::Texture<G>> =
-        od.gen_textures(&gltf, &|i| &images[i], &texture_of_image);
+        od.gen_textures(&gltf, |i| &images[i], texture_of_image);
     let materials = od.gen_materials(&gltf);
     let mut obj = od.gen_object(&gltf, &vertices, &textures, &materials);
 
